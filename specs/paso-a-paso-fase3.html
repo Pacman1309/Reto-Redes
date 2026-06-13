@@ -3,348 +3,1778 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Guia visual - Fase 3</title>
+  <title>Guia completa - Fase 3 | Reto Redes OMI</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --panel: #111827;
-      --panel-2: #1f2937;
-      --text: #e5e7eb;
-      --muted: #9ca3af;
-      --accent: #22c55e;
-      --accent-2: #38bdf8;
-      --warn: #f59e0b;
-      --danger: #ef4444;
-      --line: rgba(255,255,255,.08);
+      --bg: #f6f7fb;
+      --paper: #ffffff;
+      --ink: #152033;
+      --muted: #5b677a;
+      --line: #d9e0ea;
+      --nav: #0d263f;
+      --nav-soft: #153859;
+      --blue: #1769aa;
+      --green: #237a57;
+      --amber: #9a6700;
+      --red: #b3261e;
+      --code: #101827;
+      --code-line: #27324a;
     }
 
     * { box-sizing: border-box; }
-
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top left, rgba(56, 189, 248, .18), transparent 28%),
-        radial-gradient(circle at top right, rgba(34, 197, 94, .16), transparent 24%),
-        linear-gradient(180deg, #0b1220, #0f172a 40%, #111827);
-      color: var(--text);
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       line-height: 1.55;
     }
-
-    .wrap {
-      max-width: 1200px;
+    a { color: inherit; }
+    .app { min-height: 100vh; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(13, 38, 63, .97);
+      color: #fff;
+      border-bottom: 1px solid rgba(255,255,255,.13);
+    }
+    .topbar-inner {
+      max-width: 1440px;
       margin: 0 auto;
-      padding: 32px 20px 56px;
-    }
-
-    .hero {
-      background: linear-gradient(135deg, rgba(34,197,94,.18), rgba(56,189,248,.12));
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.28);
-    }
-
-    .eyebrow {
-      display: inline-block;
-      padding: 6px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.08);
-      color: #d1fae5;
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      margin-bottom: 14px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      font-size: clamp(2rem, 4vw, 3.4rem);
-      line-height: 1.1;
-    }
-
-    .lead {
-      max-width: 880px;
-      color: var(--muted);
-      margin: 0 0 20px;
-      font-size: 1.05rem;
-    }
-
-    .links {
       display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 18px;
-    }
-
-    .btn {
-      display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 11px 16px;
-      border-radius: 14px;
-      text-decoration: none;
-      color: white;
-      border: 1px solid transparent;
-      font-weight: 600;
-    }
-
-    .btn.primary { background: linear-gradient(135deg, var(--accent), #16a34a); }
-    .btn.secondary { background: rgba(255,255,255,.06); border-color: var(--line); }
-
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(12, 1fr);
+      justify-content: space-between;
       gap: 16px;
-      margin-top: 20px;
+      padding: 10px 18px;
     }
-
-    .card {
-      background: rgba(17, 24, 39, .88);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 18px;
-      box-shadow: 0 12px 30px rgba(0,0,0,.18);
+    .brand { font-weight: 800; letter-spacing: .01em; }
+    .top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .top-actions a, .top-actions button, .copy {
+      border: 1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+      font-size: .9rem;
+      cursor: pointer;
+      text-decoration: none;
     }
-
-    .card h2, .card h3 {
-      margin-top: 0;
-      margin-bottom: 10px;
-    }
-
-    .meta {
-      color: var(--muted);
-      font-size: .95rem;
-    }
-
-    .span-4 { grid-column: span 4; }
-    .span-6 { grid-column: span 6; }
-    .span-12 { grid-column: span 12; }
-
-    .legend {
+    .layout {
+      max-width: 1440px;
+      margin: 0 auto;
       display: grid;
-      gap: 10px;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      padding: 24px 18px 64px;
     }
-
-    .pill {
-      display: inline-block;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 12px;
+    .sidebar {
+      position: sticky;
+      top: 62px;
+      align-self: start;
+      max-height: calc(100vh - 80px);
+      overflow: auto;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    .sidebar h2 {
+      margin: 0;
+      padding: 14px 14px 8px;
+      font-size: .82rem;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .nav { display: grid; gap: 1px; padding: 0 8px 10px; }
+    .nav a {
+      text-decoration: none;
+      padding: 8px 10px;
+      border-radius: 6px;
+      color: #26364d;
+      font-size: .93rem;
+    }
+    .nav a:hover { background: #edf3f9; color: #0b4f84; }
+    .content { min-width: 0; }
+    .hero {
+      background: var(--nav);
+      color: #fff;
+      border-radius: 8px;
+      padding: 28px;
+      margin-bottom: 18px;
+      border: 1px solid #0a2038;
+    }
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #b8d8f2;
+      font-size: .82rem;
       font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: .04em;
+      letter-spacing: .06em;
     }
-
-    .ok { background: rgba(34,197,94,.16); color: #86efac; }
-    .info { background: rgba(56,189,248,.16); color: #7dd3fc; }
-    .warn { background: rgba(245,158,11,.16); color: #fcd34d; }
-    .danger { background: rgba(239,68,68,.16); color: #fca5a5; }
-
-    .steps {
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 3.7rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    .lead { max-width: 920px; margin: 0; color: #d6e4ef; font-size: 1.05rem; }
+    .facts {
       display: grid;
-      gap: 14px;
-    }
-
-    .step {
-      position: relative;
-      overflow: hidden;
-    }
-
-    .step::before {
-      content: "";
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 6px;
-      background: linear-gradient(180deg, var(--accent-2), var(--accent));
-    }
-
-    .step h3 {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 10px;
-      margin-bottom: 8px;
+      margin-top: 20px;
     }
-
-    ul {
-      margin: 10px 0 0 18px;
-      padding: 0;
-      color: var(--text);
+    .fact {
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 8px;
+      padding: 11px 12px;
+      background: rgba(255,255,255,.08);
     }
-
-    .note {
-      color: var(--muted);
-      margin-top: 8px;
-      font-size: .95rem;
+    .fact span { display: block; color: #b8d8f2; font-size: .78rem; text-transform: uppercase; }
+    .fact strong { display: block; margin-top: 4px; font-size: .96rem; overflow-wrap: anywhere; }
+    .intro-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(280px, .7fr);
+      gap: 16px;
+      margin-bottom: 18px;
     }
-
-    .toc {
+    .panel, .guide-section {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 8px 20px rgba(21, 32, 51, .05);
+    }
+    .panel { padding: 18px; }
+    .panel h2 { margin: 0 0 8px; font-size: 1.1rem; }
+    .panel ul { margin: 10px 0 0 19px; padding: 0; }
+    .guide-section { margin: 14px 0; overflow: hidden; }
+    .section-head {
+      display: grid;
+      grid-template-columns: 36px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+      padding: 16px 18px;
+      background: #f9fbfd;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-pill {
+      display: inline-block;
+      margin-bottom: 5px;
+      color: #fff;
+      background: var(--blue);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: .76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .section-head h2 { margin: 0; font-size: clamp(1.25rem, 2.3vw, 1.7rem); line-height: 1.2; }
+    .done input, .check input { width: 18px; height: 18px; accent-color: var(--green); }
+    .section-body { padding: 16px 18px 20px; }
+    .section-body h3 {
+      margin: 22px 0 8px;
+      padding-top: 12px;
+      border-top: 1px solid #edf1f5;
+      font-size: 1.05rem;
+      color: #102a43;
+    }
+    .section-body h3:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
+    .section-body p { margin: 9px 0; color: #26364d; }
+    .section-body ul { margin: 9px 0 12px 22px; padding: 0; }
+    .section-body li { margin: 4px 0; }
+    .numbered { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 6px; }
+    .numbered span { color: var(--blue); font-weight: 800; }
+    .line-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 7px;
+      margin: 10px 0 14px;
+    }
+    .line-list span {
+      border: 1px solid #e4e9f0;
+      border-radius: 8px;
+      padding: 8px 10px;
+      background: #fbfcfe;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: .9rem;
+      overflow-wrap: anywhere;
+    }
+    .code-wrap { position: relative; margin: 12px 0 16px; }
+    pre {
+      margin: 0;
+      overflow: auto;
+      border-radius: 8px;
+      border: 1px solid var(--code-line);
+      background: var(--code);
+      color: #e8eef8;
+      padding: 14px;
+      font-size: .88rem;
+      line-height: 1.48;
+      tab-size: 2;
+    }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+    .copy {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: #1f3b63;
+      border-color: #4f6688;
+      font-size: .8rem;
+      padding: 5px 8px;
+    }
+    .kv-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 12px;
+      gap: 8px;
+      margin: 10px 0 14px;
     }
-
-    .toc a {
-      display: block;
-      padding: 12px 14px;
-      border-radius: 14px;
-      text-decoration: none;
-      color: var(--text);
-      background: rgba(255,255,255,.04);
-      border: 1px solid var(--line);
+    .kv-grid div { border: 1px solid #e4e9f0; border-radius: 8px; padding: 9px 10px; background: #fbfcfe; }
+    .kv-grid dt { color: var(--muted); font-size: .78rem; text-transform: uppercase; font-weight: 700; }
+    .kv-grid dd { margin: 2px 0 0; font-weight: 700; overflow-wrap: anywhere; }
+    .check {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 11px;
+      margin: 7px 0;
+      border: 1px solid #e4e9f0;
+      border-radius: 8px;
+      background: #fbfcfe;
     }
-
-    .toc a span {
-      display: block;
-      color: var(--muted);
-      font-size: .9rem;
-      margin-top: 4px;
+    .check span { flex: 1; }
+    @media print {
+      .topbar, .sidebar, .copy { display: none; }
+      .layout { display: block; padding: 0; }
+      body { background: #fff; }
+      .hero, .panel, .guide-section { box-shadow: none; break-inside: avoid; }
+      .hero { color: #000; background: #fff; }
+      pre { white-space: pre-wrap; color: #000; background: #fff; border-color: #888; }
     }
-
-    code {
-      font-family: ui-monospace, SFMono-Regular, SF Mono, Consolas, monospace;
-      background: rgba(255,255,255,.07);
-      padding: 2px 6px;
-      border-radius: 6px;
-    }
-
-    @media (max-width: 900px) {
-      .span-4, .span-6 { grid-column: span 12; }
-      .hero { padding: 22px; }
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; max-height: none; }
+      .intro-grid, .facts { grid-template-columns: 1fr; }
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
     }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <section class="hero">
-      <div class="eyebrow">Guia visual de la Fase 3</div>
-      <h1>Reto Redes OMI</h1>
-      <p class="lead">Esta version resume la guia completa en un formato mas claro, con colores, secciones rapidas y un mapa de pasos. Para los comandos exactos y el detalle tecnico, usa el archivo original en txt.</p>
-      <div class="links">
-        <a class="btn primary" href="paso-a-paso-fase3.txt">Abrir guia tecnica</a>
-        <a class="btn secondary" href="../README.md">Volver al README</a>
-      </div>
-    </section>
-
-    <section class="grid" style="margin-top: 18px;">
-      <div class="card span-4">
-        <h2>Uso rapido</h2>
-        <div class="legend">
-          <div><span class="pill info">1</span> Abre la guia visual.</div>
-          <div><span class="pill ok">2</span> Sigue el mapa de pasos.</div>
-          <div><span class="pill warn">3</span> Usa el txt para pegar comandos completos.</div>
-          <div><span class="pill danger">4</span> Guarda cada equipo con <code>write memory</code>.</div>
+  <div class="app">
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">Reto Redes OMI - Fase 3</div>
+        <div class="top-actions">
+          <a href="../README.md">README</a>
+          <button type="button" onclick="window.print()">Imprimir / PDF</button>
         </div>
       </div>
+    </header>
 
-      <div class="card span-4">
-        <h2>Convenciones</h2>
-        <ul>
-          <li>La guia original tiene todos los bloques exactos.</li>
-          <li>Este archivo sirve como mapa visual para no perderte.</li>
-          <li>Los nombres de dispositivos se mantienen tal como aparecen en Packet Tracer.</li>
-        </ul>
-      </div>
+    <main class="layout">
+      <aside class="sidebar" aria-label="Indice de pasos">
+        <h2>Indice</h2>
+        <nav class="nav">
+<a href="#paso-0-guardar-copia-de-seguridad">PASO 0 - Guardar Copia de Seguridad</a>
+<a href="#paso-1-corregir-el-router-principal-rt-1era-1-45">PASO 1 - Corregir El Router Principal Rt-1Era.1-45</a>
+<a href="#paso-2-configurar-el-switch-principal-sw-1era-1-42">PASO 2 - Configurar El Switch Principal Sw-1Era.1-42</a>
+<a href="#paso-3-crear-vlans-en-todos-los-switches-restantes">PASO 3 - Crear Vlans En Todos Los Switches Restantes</a>
+<a href="#paso-4-configurar-trunks-del-backbone-y-fibra">PASO 4 - Configurar Trunks del Backbone y Fibra</a>
+<a href="#paso-5-configurar-puertos-de-acceso-por-area">PASO 5 - Configurar Puertos de Acceso Por Area</a>
+<a href="#paso-6-configurar-el-servidor-dhcp-dhcp-1era-1-39">PASO 6 - Configurar El Servidor Dhcp Dhcp-1Era.1-39</a>
+<a href="#paso-7-configurar-servidor-local-e-impresoras">PASO 7 - Configurar Servidor Local E Impresoras</a>
+<a href="#paso-8-configurar-wlc-wlc-1era-1-35">PASO 8 - Configurar Wlc Wlc-1Era.1-35</a>
+<a href="#paso-9-configurar-los-16-lwap">PASO 9 - Configurar Los 16 Lwap</a>
+<a href="#paso-10-configurar-clientes-finales">PASO 10 - Configurar Clientes Finales</a>
+<a href="#paso-11-pruebas-obligatorias">PASO 11 - Pruebas Obligatorias</a>
+<a href="#paso-12-opcional-salida-a-red-institucional-internet-simulada">PASO 12 - Opcional: Salida A Red Institucional / Internet Simulada</a>
+<a href="#paso-13-exportar-configuraciones-finales">PASO 13 - Exportar Configuraciones Finales</a>
+<a href="#checklist-final-de-cierre">Checklist Final de Cierre</a>
+        </nav>
+      </aside>
 
-      <div class="card span-4">
-        <h2>Archivo original</h2>
-        <p class="meta">Si necesitas copiar y pegar configuraciones completas, abre <code>specs/paso-a-paso-fase3.txt</code>.</p>
-        <p class="meta">Si solo quieres orientarte rapido, quedate en esta pagina.</p>
-      </div>
+      <div class="content">
+        <section class="hero" id="inicio">
+          <p class="eyebrow">Guia completa navegable</p>
+          <h1>Guia Paso A Paso Para Terminar La Fase 3 En Packet Tracer</h1>
+          <p class="lead">Dejar la red al 100% para la entrega: VLANs, trunks, DHCP, WLC/LWAP, servidor local, aislamiento de Invitados, pruebas de ping y export de configs.</p>
+          <div class="facts">
+<div class="fact"><span>Proyecto</span><strong>Reto Redes OMI</strong></div>
+<div class="fact"><span>Fuente auditada</span><strong>data/output/Reto-Redes-actual.xml</strong></div>
+<div class="fact"><span>Fecha</span><strong>2026-06-13</strong></div>
+          </div>
+        </section>
 
-      <div class="card span-12">
-        <h2>Mapa de pasos</h2>
-        <div class="toc">
-          <a href="#paso-0">Paso 0 <span>Copia de seguridad</span></a>
-          <a href="#paso-1">Paso 1 <span>Router principal</span></a>
-          <a href="#paso-2">Paso 2 <span>Switch principal</span></a>
-          <a href="#paso-3">Paso 3 <span>VLANs en el resto</span></a>
-          <a href="#paso-4">Paso 4 <span>Trunks del backbone</span></a>
-          <a href="#paso-5">Paso 5 <span>Puertos de acceso</span></a>
-          <a href="#paso-6">Paso 6 <span>Servidor DHCP</span></a>
-          <a href="#paso-7">Paso 7 <span>Servidor local e impresoras</span></a>
-          <a href="#paso-8">Paso 8 <span>WLC</span></a>
-          <a href="#paso-9">Paso 9 <span>LWAP</span></a>
-          <a href="#paso-10">Paso 10 <span>Clientes finales</span></a>
-          <a href="#paso-11">Paso 11 <span>Pruebas obligatorias</span></a>
-          <a href="#paso-12">Paso 12 <span>Salida simulada</span></a>
-          <a href="#paso-13">Paso 13 <span>Exportar configuraciones</span></a>
-        </div>
-      </div>
-    </section>
+        <section class="intro-grid" aria-label="Antes de empezar">
+          <div class="panel">
+            <h2>Como seguirla</h2>
+            <p>La guia esta completa dentro de este HTML: puedes navegar por paso, copiar bloques de CLI y marcar avance sin abrir el archivo de texto.</p>
+          </div>
+          <div class="panel">
+            <h2>Convenciones</h2>
+            <ul>
+<li>Cuando diga "abrir CLI", hagan clic en el dispositivo, pestana CLI, presionen Enter si lo pide y peguen el bloque completo.</li>
+<li>Al final de cada bloque se incluye "write memory" para guardar.</li>
+<li>Si Packet Tracer pregunta "Continue with configuration dialog?", escriban no.</li>
+<li>Si un modelo Switch-PT viejo marca error en un comando de STP o trunk avanzado, ignoren solo ese comando y sigan con el resto.</li>
+<li>No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.</li>
+            </ul>
+          </div>
+        </section>
 
-    <section class="steps" style="margin-top: 16px;">
-      <article class="card step" id="paso-0">
-        <h3><span class="pill info">Paso 0</span> Guardar copia de seguridad</h3>
-        <p class="meta">Haz una copia del archivo Packet Tracer antes de tocar nada.</p>
-      </article>
-
-      <article class="card step" id="paso-1">
-        <h3><span class="pill ok">Paso 1</span> Router principal RT-1ERA.1-45</h3>
-        <p class="meta">Configura el router, sus subinterfaces VLAN y la ACL de invitados.</p>
-      </article>
-
-      <article class="card step" id="paso-2">
-        <h3><span class="pill ok">Paso 2</span> Switch principal SW-1ERA.1-42</h3>
-        <p class="meta">Crea las VLANs base, define trunks y deja el switch como root primary.</p>
-      </article>
-
-      <article class="card step" id="paso-3">
-        <h3><span class="pill ok">Paso 3</span> VLANs en el resto de switches</h3>
-        <p class="meta">Replica la lista de VLANs en los demas switches de la topologia.</p>
-      </article>
-
-      <article class="card step" id="paso-4">
-        <h3><span class="pill warn">Paso 4</span> Trunks del backbone y fibra</h3>
-        <p class="meta">Ajusta los enlaces troncales para transportar todas las VLANs necesarias.</p>
-      </article>
-
-      <article class="card step" id="paso-5">
-        <h3><span class="pill warn">Paso 5</span> Puertos de acceso por area</h3>
-        <p class="meta">Asigna cada puerto a su VLAN segun el area, equipo o servicio.</p>
-      </article>
-
-      <article class="card step" id="paso-6">
-        <h3><span class="pill info">Paso 6</span> Servidor DHCP DHCP-1ERA.1-39</h3>
-        <p class="meta">Configura los pools, la puerta de enlace y el reparto de direcciones.</p>
-      </article>
-
-      <article class="card step" id="paso-7">
-        <h3><span class="pill info">Paso 7</span> Servidor local e impresoras</h3>
-        <p class="meta">Deja funcionando los servicios locales y sus equipos asociados.</p>
-      </article>
-
-      <article class="card step" id="paso-8">
-        <h3><span class="pill ok">Paso 8</span> WLC WLC-1ERA.1-35</h3>
-        <p class="meta">Configura el controlador inalambrico y sus ajustes basicos.</p>
-      </article>
-
-      <article class="card step" id="paso-9">
-        <h3><span class="pill ok">Paso 9</span> Los 16 LWAP</h3>
-        <p class="meta">Une cada punto de acceso al WLC y valida su registro.</p>
-      </article>
-
-      <article class="card step" id="paso-10">
-        <h3><span class="pill ok">Paso 10</span> Clientes finales</h3>
-        <p class="meta">Verifica que PCs y dispositivos finales queden en su red correcta.</p>
-      </article>
-
-      <article class="card step" id="paso-11">
-        <h3><span class="pill danger">Paso 11</span> Pruebas obligatorias</h3>
-        <p class="meta">Haz ping, revisa conectividad y confirma que todo responda como debe.</p>
-      </article>
-
-      <article class="card step" id="paso-12">
-        <h3><span class="pill warn">Paso 12</span> Salida a red institucional o internet simulada</h3>
-        <p class="meta">Si aplica, prueba la salida externa sin romper el aislamiento interno.</p>
-      </article>
-
-      <article class="card step" id="paso-13">
-        <h3><span class="pill info">Paso 13</span> Exportar configuraciones finales</h3>
-        <p class="meta">Guarda las configuraciones definitivas para entregar el proyecto.</p>
-      </article>
-    </section>
+<section class="guide-section" id="paso-0-guardar-copia-de-seguridad">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 0 - Guardar Copia de Seguridad como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 0</span>
+      <h2>Guardar Copia De Seguridad</h2>
+    </div>
   </div>
+  <div class="section-body">
+<p class="numbered"><span>1.</span>Abran el archivo actual en Packet Tracer.</p>
+<p class="numbered"><span>2.</span>Guarden una copia con otro nombre, por ejemplo:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>   Reto-Redes-Fase3-final-en-proceso.pkt</code></pre></div>
+<p class="numbered"><span>3.</span>Trabajen sobre esa copia.</p>
+  </div>
+</section>
+<section class="guide-section" id="paso-1-corregir-el-router-principal-rt-1era-1-45">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 1 - Corregir El Router Principal Rt-1Era.1-45 como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 1</span>
+      <h2>Corregir El Router Principal Rt-1Era.1-45</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Dispositivo</h3>
+<p>RT-1ERA.1-45</p>
+<h3>Accion</h3>
+<p>Abrir RT-1ERA.1-45 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname RT-1ERA.1-45
+ip cef
+!
+interface GigabitEthernet0/0/0
+ description TRUNK_hacia_SW-1ERA.1-42
+ no ip address
+ no shutdown
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/0/0.10
+ description VLAN10_Primaria
+ encapsulation dot1Q 10
+ ip address 172.23.40.1 255.255.254.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.20
+ description VLAN20_Secundaria
+ encapsulation dot1Q 20
+ ip address 172.23.42.1 255.255.255.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.30
+ description VLAN30_Invitados
+ encapsulation dot1Q 30
+ ip address 172.23.43.1 255.255.255.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ ip access-group ACL_INVITADOS_IN in
+ no shutdown
+!
+interface GigabitEthernet0/0/0.40
+ description VLAN40_Preparatoria
+ encapsulation dot1Q 40
+ ip address 172.23.44.1 255.255.255.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.50
+ description VLAN50_Entrenadores
+ encapsulation dot1Q 50
+ ip address 172.23.45.1 255.255.255.192
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.60
+ description VLAN60_Prensa
+ encapsulation dot1Q 60
+ ip address 172.23.45.65 255.255.255.192
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.70
+ description VLAN70_GestionTI
+ encapsulation dot1Q 70
+ ip address 172.23.45.129 255.255.255.192
+ no ip helper-address 172.23.45.129
+ no shutdown
+!
+interface GigabitEthernet0/0/0.80
+ description VLAN80_Jueces
+ encapsulation dot1Q 80
+ ip address 172.23.45.193 255.255.255.224
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+ip access-list extended ACL_INVITADOS_IN
+ remark Invitados no puede entrar a redes internas OMI/Tec
+ deny ip 172.23.43.0 0.0.0.255 172.23.40.0 0.0.7.255
+ permit ip 172.23.43.0 0.0.0.255 any
+!
+end
+write memory</code></pre></div>
+<h3>Verificacion en el mismo router</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show ip interface brief
+show running-config | section GigabitEthernet0/0/0
+show access-lists</code></pre></div>
+<h3>Resultado esperado</h3>
+<ul>
+<li>Subinterfaces .10 a .80 en up/up.</li>
+<li>Helper 172.23.45.130 en VLAN 10,20,30,40,50,60,80.</li>
+<li>Sin helper en VLAN 70.</li>
+<li>ACL_INVITADOS_IN existente.</li>
+</ul>
+  </div>
+</section>
+<section class="guide-section" id="paso-2-configurar-el-switch-principal-sw-1era-1-42">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 2 - Configurar El Switch Principal Sw-1Era.1-42 como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 2</span>
+      <h2>Configurar El Switch Principal Sw-1Era.1-42</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Dispositivo</h3>
+<p>SW-1ERA.1-42</p>
+<h3>Accion</h3>
+<p>Abrir SW-1ERA.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERA.1-42
+!
+vlan 10
+ name Primaria
+vlan 20
+ name Secundaria
+vlan 30
+ name Invitados
+vlan 40
+ name Preparatoria
+vlan 50
+ name Entrenadores
+vlan 60
+ name Prensa
+vlan 70
+ name GestionTI
+vlan 80
+ name Jueces
+!
+interface GigabitEthernet1/0/1
+ description TRUNK_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet1/0/2
+ description TRUNK_hacia_WLC-1ERA.1-35
+ switchport mode trunk
+ switchport trunk native vlan 70
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet1/0/4
+ description TRUNK_hacia_RT-1ERA.1-45
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet1/0/5
+ description DHCP-1ERA.1-39
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ no shutdown
+!
+spanning-tree vlan 10,20,30,40,50,60,70,80 root primary
+end
+write memory</code></pre></div>
+<h3>Verificacion</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show vlan brief
+show interfaces trunk</code></pre></div>
+<h3>Resultado esperado</h3>
+<ul>
+<li>VLAN 10,20,30,40,50,60,70,80 existen.</li>
+<li>Trunks activos en Gi1/0/1, Gi1/0/2 y Gi1/0/4.</li>
+<li>Gi1/0/5 en access VLAN 70.</li>
+</ul>
+  </div>
+</section>
+<section class="guide-section" id="paso-3-crear-vlans-en-todos-los-switches-restantes">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 3 - Crear Vlans En Todos Los Switches Restantes como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 3</span>
+      <h2>Crear Vlans En Todos Los Switches Restantes</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Dispositivos</h3>
+<div class="line-list">
+<span>SW-1ERA.1-43</span>
+<span>SW-1ERA.1-40</span>
+<span>SW-2ERA.1-44</span>
+<span>SW-2ERA.1-42</span>
+<span>SW-3ERA.1-44</span>
+<span>SW-3ERA.1-42</span>
+<span>SW-1ERC.1-44</span>
+<span>SW-1ERC.1-42</span>
+<span>SW-1ERC.1-40</span>
+<span>SW-4ERC.1-44</span>
+<span>SW-4ERC.1-42</span>
+<span>SW-1ERB.1-44</span>
+<span>SW-1ERB.1-42</span>
+<span>SW-2ERB.1-44</span>
+<span>SW-2ERB.1-42</span>
+<span>SW-2ERB.1-40</span>
+<span>SW-2ERBA.1-44</span>
+<span>SW-2ERBA.1-42</span>
+<span>SW-2ERBL.1-44</span>
+<span>SW-2ERBL.1-42</span>
+</div>
+<h3>Accion</h3>
+<p>En cada switch de la lista, abrir CLI y pegar el mismo bloque. Despues cambien el hostname en la primera linea por el nombre real del switch.</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname NOMBRE_DEL_SWITCH
+!
+vlan 10
+ name Primaria
+vlan 20
+ name Secundaria
+vlan 30
+ name Invitados
+vlan 40
+ name Preparatoria
+vlan 50
+ name Entrenadores
+vlan 60
+ name Prensa
+vlan 70
+ name GestionTI
+vlan 80
+ name Jueces
+!
+end
+write memory</code></pre></div>
+<h3>Ejemplo</h3>
+<p>Si estan en SW-2ERA.1-42, cambien:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>hostname NOMBRE_DEL_SWITCH</code></pre></div>
+<p>por:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>hostname SW-2ERA.1-42</code></pre></div>
+  </div>
+</section>
+<section class="guide-section" id="paso-4-configurar-trunks-del-backbone-y-fibra">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 4 - Configurar Trunks del Backbone y Fibra como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 4</span>
+      <h2>Configurar Trunks Del Backbone Y Fibra</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<p>Estos puertos salen del XML actual. Aqui si usen los nombres/puertos exactos.</p>
+<div class="kv-grid">
+<div><dt>4.1 Dispositivo</dt><dd>SW-1ERA.1-43</dd></div>
+</div>
+<p>Abrir SW-1ERA.1-43 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERA.1-43
+interface GigabitEthernet1/1
+ description TRUNK_hacia_SW-1ERA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERA.1-40
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-3ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet8/1
+ description FIBRA_hacia_SW-2ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet7/1
+ description FIBRA_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet5/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.2 Dispositivo</dt><dd>SW-1ERA.1-40</dd></div>
+</div>
+<p>Abrir SW-1ERA.1-40 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERA.1-40
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.3 Dispositivo</dt><dd>SW-2ERA.1-44</dd></div>
+</div>
+<p>Abrir SW-2ERA.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERA.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.4 Dispositivo</dt><dd>SW-2ERA.1-42</dd></div>
+</div>
+<p>Abrir SW-2ERA.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERA.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.5 Dispositivo</dt><dd>SW-3ERA.1-44</dd></div>
+</div>
+<p>Abrir SW-3ERA.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-3ERA.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-3ERA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.6 Dispositivo</dt><dd>SW-3ERA.1-42</dd></div>
+</div>
+<p>Abrir SW-3ERA.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-3ERA.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-3ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.7 Dispositivo</dt><dd>SW-1ERC.1-44</dd></div>
+</div>
+<p>Abrir SW-1ERC.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERC.1-44
+interface GigabitEthernet8/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-4ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet7/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERC.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.8 Dispositivo</dt><dd>SW-1ERC.1-42</dd></div>
+</div>
+<p>Abrir SW-1ERC.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERC.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-1ERC.1-40
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.9 Dispositivo</dt><dd>SW-1ERC.1-40</dd></div>
+</div>
+<p>Abrir SW-1ERC.1-40 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERC.1-40
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-1ERC.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.10 Dispositivo</dt><dd>SW-4ERC.1-44</dd></div>
+</div>
+<p>Abrir SW-4ERC.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-4ERC.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-4ERC.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.11 Dispositivo</dt><dd>SW-4ERC.1-42</dd></div>
+</div>
+<p>Abrir SW-4ERC.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-4ERC.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-4ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.12 Dispositivo</dt><dd>SW-1ERB.1-44</dd></div>
+</div>
+<p>Abrir SW-1ERB.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERB.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet8/1
+ description FIBRA_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet7/1
+ description FIBRA_hacia_SW-2ERBA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet6/1
+ description FIBRA_hacia_SW-2ERBL.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet5/1
+ description FIBRA_hacia_SW-2ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERB.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.13 Dispositivo</dt><dd>SW-1ERB.1-42</dd></div>
+</div>
+<p>Abrir SW-1ERB.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-1ERB.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.14 Dispositivo</dt><dd>SW-2ERBA.1-44</dd></div>
+</div>
+<p>Abrir SW-2ERBA.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERBA.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.15 Dispositivo</dt><dd>SW-2ERBA.1-42</dd></div>
+</div>
+<p>Abrir SW-2ERBA.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERBA.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.16 Dispositivo</dt><dd>SW-2ERBL.1-44</dd></div>
+</div>
+<p>Abrir SW-2ERBL.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERBL.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBL.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.17 Dispositivo</dt><dd>SW-2ERBL.1-42</dd></div>
+</div>
+<p>Abrir SW-2ERBL.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERBL.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBL.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.18 Dispositivo</dt><dd>SW-2ERB.1-44</dd></div>
+</div>
+<p>Abrir SW-2ERB.1-44 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERB.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERB.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.19 Dispositivo</dt><dd>SW-2ERB.1-42</dd></div>
+</div>
+<p>Abrir SW-2ERB.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERB.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-2ERB.1-40
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<div class="kv-grid">
+<div><dt>4.20 Dispositivo</dt><dd>SW-2ERB.1-40</dd></div>
+</div>
+<p>Abrir SW-2ERB.1-40 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname SW-2ERB.1-40
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-2ERB.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory</code></pre></div>
+<h3>Verificacion despues del Paso 4</h3>
+<p>En cada switch, correr:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show interfaces trunk
+show vlan brief</code></pre></div>
+<h3>Resultado esperado</h3>
+<ul>
+<li>Todos los enlaces entre switches aparecen como trunk.</li>
+<li>VLAN 10-80 estan permitidas en los trunks.</li>
+</ul>
+  </div>
+</section>
+<section class="guide-section" id="paso-5-configurar-puertos-de-acceso-por-area">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 5 - Configurar Puertos de Acceso Por Area como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 5</span>
+      <h2>Configurar Puertos De Acceso Por Area</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Importante</h3>
+<p>El XML muestra muchos equipos llegando por TO y patch panels. En Packet Tracer, identifiquen visualmente el puerto exacto donde termina cada TO. Si varios equipos aparecen conectados al mismo puerto por error de patching, repatchen para que cada dispositivo tenga un puerto de switch propio.</p>
+<h3>5.1 Puertos para LWAP / AP ligeros - VLAN 70 GestionTI</h3>
+<p>Los AP ligeros deben quedar en VLAN 70 para descubrir el WLC por CAPWAP.</p>
+<h3>Mapa detectado</h3>
+<ul>
+<li>CIT-PBAP-01, CIT-PBAP-02 -&gt; SW-1ERA.1-40</li>
+<li>CIT-02AP-01 -&gt; SW-2ERA.1-42</li>
+<li>CIT-03AP-01, CIT-03AP-02, CIT-03AP-03 -&gt; SW-3ERA.1-42</li>
+<li>HUM-PBAP-02 y Light Weight Access Point6 -&gt; SW-1ERB.1-42</li>
+<li>HUM-02AP-05 -&gt; SW-2ERB.1-40</li>
+<li>HUM-02AP-01, HUM-02AP-02, HUM-02AP-03, HUM-02AP-04 -&gt; SW-2ERBA.1-42</li>
+<li>HUM-PBAP-03 -&gt; SW-2ERBL.1-42</li>
+<li>ING-04AP-01 -&gt; SW-4ERC.1-42</li>
+<li>ING-PBAP-01 -&gt; SW-1ERC.1-40</li>
+</ul>
+<p>En cada switch donde haya APs, seleccionen SOLO los puertos fisicos de esos APs y peguen este bloque cambiando el rango si es necesario:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+interface range FastEthernet0/1 - 24
+ description LWAP_Gestion_CAPWAP
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ no shutdown
+end
+write memory</code></pre></div>
+<p>Si ese switch tambien tiene PCs cableadas, NO usen todo Fa0/1-24. Usen solo los puertos donde realmente llegan los APs, por ejemplo:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>interface range FastEthernet0/3 - 6</code></pre></div>
+<h3>5.2 Puertos cableados de Preparatoria - VLAN 40</h3>
+<h3>Aplicar en los switches donde terminan PCs de laboratorio de Preparatoria</h3>
+<ul>
+<li>SW-1ERC.1-42</li>
+<li>SW-1ERC.1-40</li>
+<li>SW-2ERB.1-42</li>
+<li>SW-2ERB.1-40</li>
+</ul>
+<p>Abrir el switch correspondiente &gt; CLI &gt; pegar, ajustando el rango a los puertos donde estan las PCs:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+interface range FastEthernet0/1 - 24
+ description PCs_Preparatoria
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
+ no shutdown
+end
+write memory</code></pre></div>
+<h3>5.3 Puertos cableados de Entrenadores - VLAN 50</h3>
+<h3>Dispositivo principal detectado</h3>
+<p>SW-2ERA.1-42</p>
+<h3>Equipos detectados</h3>
+<p>Entr1-A, Entr2-A</p>
+<p>Abrir SW-2ERA.1-42 &gt; CLI &gt; pegar, ajustando el rango al puerto real de esos equipos:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+interface range FastEthernet0/13 - 24
+ description Entrenadores_Cableados
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+end
+write memory</code></pre></div>
+<h3>5.4 Puertos de Jueces, Servidor Local e Impresoras - VLAN 80</h3>
+<h3>Dispositivo principal detectado</h3>
+<p>SW-4ERC.1-42</p>
+<h3>Equipos</h3>
+<div class="line-list">
+<span>ING-04SRV-01</span>
+<span>ING-04PRN-01</span>
+<span>ING-04PRN-02</span>
+<span>ING-04PRN-03</span>
+<span>ING-04PRN-04</span>
+<span>PCs de jueces si estan cableadas</span>
+</div>
+<p>Abrir SW-4ERC.1-42 &gt; CLI &gt; pegar, ajustando el rango a los puertos reales:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+interface range FastEthernet0/1 - 12
+ description Jueces_Servidor_Impresoras
+ switchport mode access
+ switchport access vlan 80
+ spanning-tree portfast
+ no shutdown
+end
+write memory</code></pre></div>
+<h3>Nota</h3>
+<p>Si ING-04AP-01 tambien esta conectado a SW-4ERC.1-42, su puerto debe quedarse en VLAN 70, no en VLAN 80, porque es LWAP de gestion CAPWAP.</p>
+  </div>
+</section>
+<section class="guide-section" id="paso-6-configurar-el-servidor-dhcp-dhcp-1era-1-39">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 6 - Configurar El Servidor Dhcp Dhcp-1Era.1-39 como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 6</span>
+      <h2>Configurar El Servidor Dhcp Dhcp-1Era.1-39</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Dispositivo</h3>
+<p>DHCP-1ERA.1-39</p>
+<h3>6.1 IP estatica del servidor</h3>
+<p>Abrir DHCP-1ERA.1-39 &gt; Desktop &gt; IP Configuration:</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.130</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.129</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+</div>
+<h3>6.2 Pools DHCP</h3>
+<p>Abrir DHCP-1ERA.1-39 &gt; Services &gt; DHCP.</p>
+<h3>Primero</h3>
+<ul>
+<li>Apagar o eliminar el pool generico "serverPool".</li>
+<li>Dejar el servicio DHCP en On.</li>
+</ul>
+<h3>Crear o corregir estos pools</h3>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN10_Primaria</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.40.1</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.40.3</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.254.0</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>509</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN20_Secundaria</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.42.1</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.42.3</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>253</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN30_Invitados</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.43.1</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.43.3</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>253</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN40_Preparatoria</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.44.1</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.44.3</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>253</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN50_Entrenadores</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.1</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.45.3</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>61</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN60_Prensa</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.65</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.45.67</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>61</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN70_GestionTI</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.129</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.45.154</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>37</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Pool</dt><dd>VLAN80_Jueces</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>Start IP Address</dt><dd>172.23.45.200</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Maximum Number of Users</dt><dd>23</dd></div>
+</div>
+<h3>Notas</h3>
+<ul>
+<li>Se empieza en .3 en varias VLAN para reservar .1 como gateway y .2 para</li>
+</ul>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>  interfaz dinamica del WLC si la usan.</code></pre></div>
+<ul>
+<li>En VLAN 70 se reserva .129 gateway, .130 DHCP, .131 WLC y .132-.153 para</li>
+</ul>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>  gestion de switches/DNS si quieren documentarlo.</code></pre></div>
+<ul>
+<li>En VLAN 80 se reserva .194 para servidor local, .195-.198 para impresoras y</li>
+</ul>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>  .199 para interfaz WLC/Jueces si la version de Packet Tracer la pide.</code></pre></div>
+  </div>
+</section>
+<section class="guide-section" id="paso-7-configurar-servidor-local-e-impresoras">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 7 - Configurar Servidor Local E Impresoras como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 7</span>
+      <h2>Configurar Servidor Local E Impresoras</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>7.1 Servidor Local de evaluacion</h3>
+<h3>Dispositivo</h3>
+<p>ING-04SRV-01</p>
+<p>Abrir ING-04SRV-01 &gt; Desktop &gt; IP Configuration:</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.194</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+</div>
+<h3>Despues</h3>
+<p>Desktop &gt; Command Prompt:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ping 172.23.45.193</code></pre></div>
+<h3>Resultado esperado</h3>
+<p>Debe responder el gateway de VLAN 80.</p>
+<h3>7.2 Impresoras de red</h3>
+<p>Configurar en Desktop/Config &gt; IP Configuration:</p>
+<p>ING-04PRN-01</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.195</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
+</div>
+<p>ING-04PRN-02</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.196</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
+</div>
+<p>ING-04PRN-03</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.197</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
+</div>
+<p>ING-04PRN-04</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.198</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
+</div>
+  </div>
+</section>
+<section class="guide-section" id="paso-8-configurar-wlc-wlc-1era-1-35">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 8 - Configurar Wlc Wlc-1Era.1-35 como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 8</span>
+      <h2>Configurar Wlc Wlc-1Era.1-35</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Dispositivo</h3>
+<p>WLC-1ERA.1-35</p>
+<h3>8.1 Gestion del WLC</h3>
+<p>Abrir WLC-1ERA.1-35 &gt; Config &gt; Management:</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>172.23.45.131</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Default Gateway</dt><dd>172.23.45.129</dd></div>
+</div>
+<h3>Verificar que el cable del WLC vaya al puerto</h3>
+<p>SW-1ERA.1-42 GigabitEthernet1/0/2</p>
+<h3>8.2 Interfaces dinamicas del WLC</h3>
+<p>Si su version de Packet Tracer muestra una seccion de Interfaces en el WLC, crear estas interfaces. Si no existe esa pantalla, salten a 8.3 y usen solo el campo VLAN ID de cada WLAN.</p>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan10_primaria</dd></div>
+<div><dt>VLAN ID</dt><dd>10</dd></div>
+<div><dt>IP</dt><dd>172.23.40.2</dd></div>
+<div><dt>Mask</dt><dd>255.255.254.0</dd></div>
+<div><dt>Gateway</dt><dd>172.23.40.1</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan20_secundaria</dd></div>
+<div><dt>VLAN ID</dt><dd>20</dd></div>
+<div><dt>IP</dt><dd>172.23.42.2</dd></div>
+<div><dt>Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Gateway</dt><dd>172.23.42.1</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan30_invitados</dd></div>
+<div><dt>VLAN ID</dt><dd>30</dd></div>
+<div><dt>IP</dt><dd>172.23.43.2</dd></div>
+<div><dt>Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Gateway</dt><dd>172.23.43.1</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan40_preparatoria</dd></div>
+<div><dt>VLAN ID</dt><dd>40</dd></div>
+<div><dt>IP</dt><dd>172.23.44.2</dd></div>
+<div><dt>Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Gateway</dt><dd>172.23.44.1</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan50_entrenadores</dd></div>
+<div><dt>VLAN ID</dt><dd>50</dd></div>
+<div><dt>IP</dt><dd>172.23.45.2</dd></div>
+<div><dt>Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Gateway</dt><dd>172.23.45.1</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan60_prensa</dd></div>
+<div><dt>VLAN ID</dt><dd>60</dd></div>
+<div><dt>IP</dt><dd>172.23.45.66</dd></div>
+<div><dt>Mask</dt><dd>255.255.255.192</dd></div>
+<div><dt>Gateway</dt><dd>172.23.45.65</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>Nombre</dt><dd>vlan80_jueces</dd></div>
+<div><dt>VLAN ID</dt><dd>80</dd></div>
+<div><dt>IP</dt><dd>172.23.45.199</dd></div>
+<div><dt>Mask</dt><dd>255.255.255.224</dd></div>
+<div><dt>Gateway</dt><dd>172.23.45.193</dd></div>
+</div>
+<h3>8.3 WLANs / SSIDs</h3>
+<p>Abrir WLC-1ERA.1-35 &gt; Config &gt; Wireless LANs.</p>
+<h3>Crear o corregir</h3>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>1</dd></div>
+<div><dt>Name</dt><dd>Primaria</dd></div>
+<div><dt>SSID</dt><dd>Primaria-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>10</dd></div>
+<div><dt>Interface</dt><dd>vlan10_primaria si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>2</dd></div>
+<div><dt>Name</dt><dd>Secundaria</dd></div>
+<div><dt>SSID</dt><dd>Secundaria-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>20</dd></div>
+<div><dt>Interface</dt><dd>vlan20_secundaria si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>3</dd></div>
+<div><dt>Name</dt><dd>Invitados</dd></div>
+<div><dt>SSID</dt><dd>Invitados-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>30</dd></div>
+<div><dt>Interface</dt><dd>vlan30_invitados si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>4</dd></div>
+<div><dt>Name</dt><dd>Preparatoria</dd></div>
+<div><dt>SSID</dt><dd>Preparatoria-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>40</dd></div>
+<div><dt>Interface</dt><dd>vlan40_preparatoria si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>5</dd></div>
+<div><dt>Name</dt><dd>Entrenadores</dd></div>
+<div><dt>SSID</dt><dd>Entrenadores-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>50</dd></div>
+<div><dt>Interface</dt><dd>vlan50_entrenadores si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>6</dd></div>
+<div><dt>Name</dt><dd>Prensa</dd></div>
+<div><dt>SSID</dt><dd>Prensa-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>60</dd></div>
+<div><dt>Interface</dt><dd>vlan60_prensa si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<div class="kv-grid">
+<div><dt>WLAN ID</dt><dd>7</dd></div>
+<div><dt>Name</dt><dd>Jueces</dd></div>
+<div><dt>SSID</dt><dd>Jueces-Wifi</dd></div>
+<div><dt>VLAN ID</dt><dd>80</dd></div>
+<div><dt>Interface</dt><dd>vlan80_jueces si existe el campo</dd></div>
+<div><dt>Security</dt><dd>WPA2-PSK si esta disponible</dd></div>
+<div><dt>Passphrase</dt><dd>concurso123</dd></div>
+<div><dt>Status</dt><dd>Enabled</dd></div>
+</div>
+<h3>Importante</h3>
+<p>En el XML actual, Primaria aparece con clave "consurso123". Corregir a: concurso123</p>
+  </div>
+</section>
+<section class="guide-section" id="paso-9-configurar-los-16-lwap">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 9 - Configurar Los 16 Lwap como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 9</span>
+      <h2>Configurar Los 16 Lwap</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Dispositivos LWAP</h3>
+<div class="line-list">
+<span>CIT-PBAP-02</span>
+<span>CIT-PBAP-01</span>
+<span>CIT-02AP-01</span>
+<span>CIT-03AP-03</span>
+<span>CIT-03AP-02</span>
+<span>CIT-03AP-01</span>
+<span>HUM-02AP-05</span>
+<span>Light Weight Access Point6</span>
+<span>HUM-PBAP-02</span>
+<span>HUM-02AP-01</span>
+<span>HUM-02AP-02</span>
+<span>HUM-02AP-03</span>
+<span>HUM-02AP-04</span>
+<span>HUM-PBAP-03</span>
+<span>ING-04AP-01</span>
+<span>ING-PBAP-01</span>
+</div>
+<h3>9.1 Renombrar AP generico</h3>
+<p>Abrir Light Weight Access Point6 &gt; Config &gt; Settings:</p>
+<div class="kv-grid">
+<div><dt>Display Name / Hostname</dt><dd>HUM-PBAP-01</dd></div>
+</div>
+<h3>9.2 Configurar IP por DHCP y controlador primario</h3>
+<h3>En cada LWAP</h3>
+<p class="numbered"><span>1.</span>Abrir AP &gt; Config.</p>
+<p class="numbered"><span>2.</span>En GigabitEthernet0 o FastEthernet0:</p>
+<ul>
+<li>DHCP: On</li>
+</ul>
+<p class="numbered"><span>3.</span>En Wireless / CAPWAP / Controller, segun aparezca:</p>
+<ul>
+<li>Primary Controller / AC IP: 172.23.45.131</li>
+</ul>
+<p class="numbered"><span>4.</span>Guardar/cerrar.</p>
+<h3>Resultado esperado</h3>
+<ul>
+<li>Cada AP recibe IP 172.23.45.154 o superior, dentro de VLAN 70.</li>
+<li>En WLC-1ERA.1-35 aparece listado como AP asociado.</li>
+</ul>
+<h3>Verificacion</h3>
+<p>Abrir WLC-1ERA.1-35 &gt; Monitor / Access Points. Debe aparecer la lista de APs registrados.</p>
+<h3>Si un AP no se registra</h3>
+<ul>
+<li>Revisar que su puerto de switch este en VLAN 70.</li>
+<li>Revisar que el trunk WLC-SW-1ERA.1-42 permita VLAN 70.</li>
+<li>Revisar que DHCP VLAN70 entregue IP.</li>
+<li>Revisar que Primary Controller sea 172.23.45.131.</li>
+</ul>
+  </div>
+</section>
+<section class="guide-section" id="paso-10-configurar-clientes-finales">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 10 - Configurar Clientes Finales como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 10</span>
+      <h2>Configurar Clientes Finales</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>10.1 Clientes cableados</h3>
+<h3>En cada PC cableada</h3>
+<p>Desktop &gt; IP Configuration &gt; DHCP.</p>
+<h3>Debe recibir</h3>
+<ul>
+<li>Preparatoria: IP 172.23.44.x, gateway 172.23.44.1</li>
+<li>Entrenadores cableados: IP 172.23.45.3-63, gateway 172.23.45.1</li>
+<li>Jueces cableados: IP 172.23.45.200-222, gateway 172.23.45.193</li>
+</ul>
+<h3>10.2 Clientes inalambricos</h3>
+<h3>En cada laptop/smartphone</h3>
+<p>Desktop &gt; PC Wireless o Config &gt; Wireless0.</p>
+<h3>Conectar segun area</h3>
+<h3>Primaria</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Primaria-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.40.x o 172.23.41.x</dd></div>
+</div>
+<h3>Secundaria</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Secundaria-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.42.x</dd></div>
+</div>
+<h3>Invitados</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Invitados-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.43.x</dd></div>
+</div>
+<h3>Preparatoria si se prueba por Wi-Fi</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Preparatoria-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.44.x</dd></div>
+</div>
+<h3>Entrenadores</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Entrenadores-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.45.3-63</dd></div>
+</div>
+<h3>Prensa</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Prensa-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.45.67-127</dd></div>
+</div>
+<h3>Jueces</h3>
+<div class="kv-grid">
+<div><dt>SSID</dt><dd>Jueces-Wifi</dd></div>
+<div><dt>Password</dt><dd>concurso123</dd></div>
+<div><dt>IP</dt><dd>DHCP</dd></div>
+<div><dt>Debe recibir</dt><dd>172.23.45.200-222</dd></div>
+</div>
+  </div>
+</section>
+<section class="guide-section" id="paso-11-pruebas-obligatorias">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 11 - Pruebas Obligatorias como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 11</span>
+      <h2>Pruebas Obligatorias</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>11.1 Prueba desde router</h3>
+<p>Abrir RT-1ERA.1-45 &gt; CLI:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ping 172.23.45.130
+ping 172.23.45.194
+show ip interface brief
+show access-lists</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Ping a DHCP responde.</li>
+<li>Ping a servidor local responde.</li>
+</ul>
+<h3>11.2 Prueba desde switch principal</h3>
+<p>Abrir SW-1ERA.1-42 &gt; CLI:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show vlan brief
+show interfaces trunk
+show running-config</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Gi1/0/1, Gi1/0/2 y Gi1/0/4 aparecen como trunks.</li>
+<li>Gi1/0/5 aparece en VLAN 70.</li>
+</ul>
+<h3>11.3 Prueba desde switches de acceso</h3>
+<h3>En cada switch</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show interfaces trunk
+show vlan brief</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Uplink hacia distribucion aparece como trunk.</li>
+<li>Puertos de usuario aparecen en su VLAN correcta.</li>
+</ul>
+<h3>11.4 Prueba desde hosts autorizados</h3>
+<h3>Desde una laptop de Primaria</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ipconfig
+ping 172.23.45.194</code></pre></div>
+<h3>Desde una laptop de Secundaria</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ipconfig
+ping 172.23.45.194</code></pre></div>
+<h3>Desde una PC de Preparatoria</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ipconfig
+ping 172.23.45.194</code></pre></div>
+<h3>Desde una PC/laptop de Jueces</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ipconfig
+ping 172.23.45.194</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Todos esos pings deben responder.</li>
+</ul>
+<h3>11.5 Prueba de aislamiento de Invitados</h3>
+<h3>Desde un cliente conectado a Invitados-Wifi</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ipconfig
+ping 172.23.43.1
+ping 172.23.45.194
+ping 172.23.45.193</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Ping a 172.23.43.1 responde.</li>
+<li>Ping a 172.23.45.194 falla.</li>
+<li>Ping a 172.23.45.193 falla.</li>
+</ul>
+<div class="kv-grid">
+<div><dt>Ese fallo es correcto</dt><dd>demuestra aislamiento de Invitados.</dd></div>
+</div>
+  </div>
+</section>
+<section class="guide-section" id="paso-12-opcional-salida-a-red-institucional-internet-simulada">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 12 - Opcional: Salida A Red Institucional / Internet Simulada como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 12</span>
+      <h2>Opcional: Salida A Red Institucional / Internet Simulada</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<p>Usen este paso solo si el profesor pide salida a Internet o red Tec. El XML tiene RT-1ERA.1-38 conectado a RT-1ERA.1-45 por Gi0/0/1.</p>
+<h3>12.1 En RT-1ERA.1-45</h3>
+<p>Abrir RT-1ERA.1-45 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+interface GigabitEthernet0/0/1
+ description ENLACE_hacia_RT-1ERA.1-38
+ ip address 172.23.47.253 255.255.255.252
+ no shutdown
+!
+ip route 0.0.0.0 0.0.0.0 172.23.47.254
+end
+write memory</code></pre></div>
+<h3>12.2 En RT-1ERA.1-38</h3>
+<p>Abrir RT-1ERA.1-38 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+hostname RT-1ERA.1-38
+interface GigabitEthernet0/0/1
+ description ENLACE_hacia_RT-1ERA.1-45
+ ip address 172.23.47.254 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0
+ description RED_TEC_o_DNS_simulada
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+!
+ip route 172.23.40.0 255.255.248.0 172.23.47.253
+end
+write memory</code></pre></div>
+<h3>12.3 DNS simulado opcional</h3>
+<h3>Si quieren usar DNS-1ERA.1-36 como servicio externo</h3>
+<p>Abrir DNS-1ERA.1-36 &gt; Desktop &gt; IP Configuration:</p>
+<div class="kv-grid">
+<div><dt>IP Address</dt><dd>10.10.10.10</dd></div>
+<div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
+<div><dt>Default Gateway</dt><dd>10.10.10.1</dd></div>
+<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+</div>
+<p>Abrir DNS-1ERA.1-36 &gt; Services &gt; DNS:</p>
+<ul>
+<li>DNS Service: On</li>
+<li>Agregar registro:</li>
+</ul>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>  Name: servidor-omi.local
+  Address: 172.23.45.194</code></pre></div>
+<p>Si usan este DNS, pueden volver a DHCP-1ERA.1-39 y poner DNS Server: 10.10.10.10 en todos los pools.</p>
+  </div>
+</section>
+<section class="guide-section" id="paso-13-exportar-configuraciones-finales">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 13 - Exportar Configuraciones Finales como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 13</span>
+      <h2>Exportar Configuraciones Finales</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>En cada router y switch</h3>
+<p class="numbered"><span>1.</span>Abrir dispositivo &gt; CLI.</p>
+<p class="numbered"><span>2.</span>Ejecutar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show running-config</code></pre></div>
+<p class="numbered"><span>3.</span>Copiar la salida a un archivo .txt con este nombre sugerido:</p>
+<div class="line-list">
+<span>RT-1ERA.1-45.txt</span>
+<span>RT-1ERA.1-38.txt si usaron Internet simulado</span>
+<span>SW-1ERA.1-42.txt</span>
+<span>SW-1ERA.1-43.txt</span>
+<span>SW-1ERA.1-40.txt</span>
+<span>SW-2ERA.1-44.txt</span>
+<span>SW-2ERA.1-42.txt</span>
+<span>SW-3ERA.1-44.txt</span>
+<span>SW-3ERA.1-42.txt</span>
+<span>SW-1ERC.1-44.txt</span>
+<span>SW-1ERC.1-42.txt</span>
+<span>SW-1ERC.1-40.txt</span>
+<span>SW-4ERC.1-44.txt</span>
+<span>SW-4ERC.1-42.txt</span>
+<span>SW-1ERB.1-44.txt</span>
+<span>SW-1ERB.1-42.txt</span>
+<span>SW-2ERB.1-44.txt</span>
+<span>SW-2ERB.1-42.txt</span>
+<span>SW-2ERB.1-40.txt</span>
+<span>SW-2ERBA.1-44.txt</span>
+<span>SW-2ERBA.1-42.txt</span>
+<span>SW-2ERBL.1-44.txt</span>
+<span>SW-2ERBL.1-42.txt</span>
+</div>
+<p>Para WLC, DHCP, Servidor Local e impresoras:</p>
+<ul>
+<li>Tomar captura o anotar pantalla de Config/Services, porque no todo sale por CLI.</li>
+</ul>
+  </div>
+</section>
+<section class="guide-section" id="checklist-final-de-cierre">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar Checklist Final de Cierre como terminado"></label>
+    <div>
+      <span class="section-pill">Checklist</span>
+      <h2>Checklist Final De Cierre</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<label class="check"><input type="checkbox"> <span>RT-1ERA.1-45 tiene helpers hacia 172.23.45.130.</span></label>
+<label class="check"><input type="checkbox"> <span>RT-1ERA.1-45 no tiene helper en VLAN 70.</span></label>
+<label class="check"><input type="checkbox"> <span>ACL_INVITADOS_IN aplicada en Gi0/0/0.30.</span></label>
+<label class="check"><input type="checkbox"> <span>SW-1ERA.1-42 tiene trunk a router, WLC y SW-1ERA.1-43.</span></label>
+<label class="check"><input type="checkbox"> <span>Todos los trunks de fibra permiten VLAN 10-80.</span></label>
+<label class="check"><input type="checkbox"> <span>Puertos de AP estan en VLAN 70.</span></label>
+<label class="check"><input type="checkbox"> <span>Puertos de Preparatoria cableada estan en VLAN 40.</span></label>
+<label class="check"><input type="checkbox"> <span>Puertos de Entrenadores cableados estan en VLAN 50.</span></label>
+<label class="check"><input type="checkbox"> <span>Servidor Local e impresoras estan en VLAN 80 con IP estatica.</span></label>
+<label class="check"><input type="checkbox"> <span>DHCP-1ERA.1-39 tiene pools correctos y no tiene serverPool generico activo.</span></label>
+<label class="check"><input type="checkbox"> <span>WLC tiene WLANs 10,20,30,40,50,60,80.</span></label>
+<label class="check"><input type="checkbox"> <span>Los 16 LWAP aparecen asociados al WLC.</span></label>
+<label class="check"><input type="checkbox"> <span>Clientes autorizados reciben IP valida por DHCP.</span></label>
+<label class="check"><input type="checkbox"> <span>Primaria, Secundaria, Preparatoria y Jueces hacen ping a 172.23.45.194.</span></label>
+<label class="check"><input type="checkbox"> <span>Invitados NO puede hacer ping a 172.23.45.194.</span></label>
+<label class="check"><input type="checkbox"> <span>Configuraciones finales exportadas a .txt.</span></label>
+<p>Cuando todos los puntos esten marcados, la Fase 3 queda lista para documentar en el reporte final.</p>
+  </div>
+</section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    document.querySelectorAll('.copy').forEach((button) => {
+      button.addEventListener('click', async () => {
+        const code = button.parentElement.querySelector('code').innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          const original = button.textContent;
+          button.textContent = 'Copiado';
+          setTimeout(() => button.textContent = original, 1200);
+        } catch (error) {
+          button.textContent = 'Selecciona';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
