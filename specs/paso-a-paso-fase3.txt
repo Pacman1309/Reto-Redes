@@ -1,0 +1,1456 @@
+GUIA PASO A PASO PARA TERMINAR LA FASE 3 EN PACKET TRACER
+Proyecto: Reto Redes OMI
+Fuente auditada: data/output/Reto-Redes-actual.xml
+Fecha: 2026-06-13
+
+Objetivo:
+Dejar la red al 100% para la entrega: VLANs, trunks, DHCP, WLC/LWAP,
+servidor local, aislamiento de Invitados, pruebas de ping y export de configs.
+
+Convencion:
+- Cuando diga "abrir CLI", hagan clic en el dispositivo, pestana CLI,
+  presionen Enter si lo pide y peguen el bloque completo.
+- Al final de cada bloque se incluye "write memory" para guardar.
+- Si Packet Tracer pregunta "Continue with configuration dialog?", escriban no.
+- Si un modelo Switch-PT viejo marca error en un comando de STP o trunk
+  avanzado, ignoren solo ese comando y sigan con el resto.
+- No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son
+  GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.
+
+
+============================================================
+PASO 0 - GUARDAR COPIA DE SEGURIDAD
+============================================================
+
+1. Abran el archivo actual en Packet Tracer.
+2. Guarden una copia con otro nombre, por ejemplo:
+   Reto-Redes-Fase3-final-en-proceso.pkt
+3. Trabajen sobre esa copia.
+
+
+============================================================
+PASO 1 - CORREGIR EL ROUTER PRINCIPAL RT-1ERA.1-45
+============================================================
+
+Dispositivo:
+RT-1ERA.1-45
+
+Accion:
+Abrir RT-1ERA.1-45 > CLI > pegar:
+
+enable
+configure terminal
+hostname RT-1ERA.1-45
+ip cef
+!
+interface GigabitEthernet0/0/0
+ description TRUNK_hacia_SW-1ERA.1-42
+ no ip address
+ no shutdown
+ duplex auto
+ speed auto
+!
+interface GigabitEthernet0/0/0.10
+ description VLAN10_Primaria
+ encapsulation dot1Q 10
+ ip address 172.23.40.1 255.255.254.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.20
+ description VLAN20_Secundaria
+ encapsulation dot1Q 20
+ ip address 172.23.42.1 255.255.255.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.30
+ description VLAN30_Invitados
+ encapsulation dot1Q 30
+ ip address 172.23.43.1 255.255.255.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ ip access-group ACL_INVITADOS_IN in
+ no shutdown
+!
+interface GigabitEthernet0/0/0.40
+ description VLAN40_Preparatoria
+ encapsulation dot1Q 40
+ ip address 172.23.44.1 255.255.255.0
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.50
+ description VLAN50_Entrenadores
+ encapsulation dot1Q 50
+ ip address 172.23.45.1 255.255.255.192
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.60
+ description VLAN60_Prensa
+ encapsulation dot1Q 60
+ ip address 172.23.45.65 255.255.255.192
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+interface GigabitEthernet0/0/0.70
+ description VLAN70_GestionTI
+ encapsulation dot1Q 70
+ ip address 172.23.45.129 255.255.255.192
+ no ip helper-address 172.23.45.129
+ no shutdown
+!
+interface GigabitEthernet0/0/0.80
+ description VLAN80_Jueces
+ encapsulation dot1Q 80
+ ip address 172.23.45.193 255.255.255.224
+ no ip helper-address 172.23.45.129
+ ip helper-address 172.23.45.130
+ no shutdown
+!
+ip access-list extended ACL_INVITADOS_IN
+ remark Invitados no puede entrar a redes internas OMI/Tec
+ deny ip 172.23.43.0 0.0.0.255 172.23.40.0 0.0.7.255
+ permit ip 172.23.43.0 0.0.0.255 any
+!
+end
+write memory
+
+Verificacion en el mismo router:
+
+show ip interface brief
+show running-config | section GigabitEthernet0/0/0
+show access-lists
+
+Resultado esperado:
+- Subinterfaces .10 a .80 en up/up.
+- Helper 172.23.45.130 en VLAN 10,20,30,40,50,60,80.
+- Sin helper en VLAN 70.
+- ACL_INVITADOS_IN existente.
+
+
+============================================================
+PASO 2 - CONFIGURAR EL SWITCH PRINCIPAL SW-1ERA.1-42
+============================================================
+
+Dispositivo:
+SW-1ERA.1-42
+
+Accion:
+Abrir SW-1ERA.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERA.1-42
+!
+vlan 10
+ name Primaria
+vlan 20
+ name Secundaria
+vlan 30
+ name Invitados
+vlan 40
+ name Preparatoria
+vlan 50
+ name Entrenadores
+vlan 60
+ name Prensa
+vlan 70
+ name GestionTI
+vlan 80
+ name Jueces
+!
+interface GigabitEthernet1/0/1
+ description TRUNK_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet1/0/2
+ description TRUNK_hacia_WLC-1ERA.1-35
+ switchport mode trunk
+ switchport trunk native vlan 70
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet1/0/4
+ description TRUNK_hacia_RT-1ERA.1-45
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet1/0/5
+ description DHCP-1ERA.1-39
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ no shutdown
+!
+spanning-tree vlan 10,20,30,40,50,60,70,80 root primary
+end
+write memory
+
+Verificacion:
+
+show vlan brief
+show interfaces trunk
+
+Resultado esperado:
+- VLAN 10,20,30,40,50,60,70,80 existen.
+- Trunks activos en Gi1/0/1, Gi1/0/2 y Gi1/0/4.
+- Gi1/0/5 en access VLAN 70.
+
+
+============================================================
+PASO 3 - CREAR VLANs EN TODOS LOS SWITCHES RESTANTES
+============================================================
+
+Dispositivos:
+SW-1ERA.1-43
+SW-1ERA.1-40
+SW-2ERA.1-44
+SW-2ERA.1-42
+SW-3ERA.1-44
+SW-3ERA.1-42
+SW-1ERC.1-44
+SW-1ERC.1-42
+SW-1ERC.1-40
+SW-4ERC.1-44
+SW-4ERC.1-42
+SW-1ERB.1-44
+SW-1ERB.1-42
+SW-2ERB.1-44
+SW-2ERB.1-42
+SW-2ERB.1-40
+SW-2ERBA.1-44
+SW-2ERBA.1-42
+SW-2ERBL.1-44
+SW-2ERBL.1-42
+
+Accion:
+En cada switch de la lista, abrir CLI y pegar el mismo bloque.
+Despues cambien el hostname en la primera linea por el nombre real del switch.
+
+enable
+configure terminal
+hostname NOMBRE_DEL_SWITCH
+!
+vlan 10
+ name Primaria
+vlan 20
+ name Secundaria
+vlan 30
+ name Invitados
+vlan 40
+ name Preparatoria
+vlan 50
+ name Entrenadores
+vlan 60
+ name Prensa
+vlan 70
+ name GestionTI
+vlan 80
+ name Jueces
+!
+end
+write memory
+
+Ejemplo:
+Si estan en SW-2ERA.1-42, cambien:
+hostname NOMBRE_DEL_SWITCH
+por:
+hostname SW-2ERA.1-42
+
+
+============================================================
+PASO 4 - CONFIGURAR TRUNKS DEL BACKBONE Y FIBRA
+============================================================
+
+Estos puertos salen del XML actual. Aqui si usen los nombres/puertos exactos.
+
+
+4.1 Dispositivo: SW-1ERA.1-43
+Abrir SW-1ERA.1-43 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERA.1-43
+interface GigabitEthernet1/1
+ description TRUNK_hacia_SW-1ERA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERA.1-40
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-3ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet8/1
+ description FIBRA_hacia_SW-2ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet7/1
+ description FIBRA_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet5/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.2 Dispositivo: SW-1ERA.1-40
+Abrir SW-1ERA.1-40 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERA.1-40
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.3 Dispositivo: SW-2ERA.1-44
+Abrir SW-2ERA.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERA.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.4 Dispositivo: SW-2ERA.1-42
+Abrir SW-2ERA.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERA.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.5 Dispositivo: SW-3ERA.1-44
+Abrir SW-3ERA.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-3ERA.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-3ERA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.6 Dispositivo: SW-3ERA.1-42
+Abrir SW-3ERA.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-3ERA.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-3ERA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.7 Dispositivo: SW-1ERC.1-44
+Abrir SW-1ERC.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERC.1-44
+interface GigabitEthernet8/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-4ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet7/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERC.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.8 Dispositivo: SW-1ERC.1-42
+Abrir SW-1ERC.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERC.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-1ERC.1-40
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.9 Dispositivo: SW-1ERC.1-40
+Abrir SW-1ERC.1-40 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERC.1-40
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-1ERC.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.10 Dispositivo: SW-4ERC.1-44
+Abrir SW-4ERC.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-4ERC.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-4ERC.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.11 Dispositivo: SW-4ERC.1-42
+Abrir SW-4ERC.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-4ERC.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-4ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.12 Dispositivo: SW-1ERB.1-44
+Abrir SW-1ERB.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERB.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERA.1-43
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet8/1
+ description FIBRA_hacia_SW-1ERC.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet7/1
+ description FIBRA_hacia_SW-2ERBA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet6/1
+ description FIBRA_hacia_SW-2ERBL.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet5/1
+ description FIBRA_hacia_SW-2ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERB.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.13 Dispositivo: SW-1ERB.1-42
+Abrir SW-1ERB.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-1ERB.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.14 Dispositivo: SW-2ERBA.1-44
+Abrir SW-2ERBA.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERBA.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBA.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.15 Dispositivo: SW-2ERBA.1-42
+Abrir SW-2ERBA.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERBA.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBA.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.16 Dispositivo: SW-2ERBL.1-44
+Abrir SW-2ERBL.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERBL.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBL.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.17 Dispositivo: SW-2ERBL.1-42
+Abrir SW-2ERBL.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERBL.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERBL.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.18 Dispositivo: SW-2ERB.1-44
+Abrir SW-2ERB.1-44 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERB.1-44
+interface GigabitEthernet9/1
+ description FIBRA_hacia_SW-1ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERB.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.19 Dispositivo: SW-2ERB.1-42
+Abrir SW-2ERB.1-42 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERB.1-42
+interface GigabitEthernet0/1
+ description TRUNK_hacia_SW-2ERB.1-44
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-2ERB.1-40
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+4.20 Dispositivo: SW-2ERB.1-40
+Abrir SW-2ERB.1-40 > CLI > pegar:
+
+enable
+configure terminal
+hostname SW-2ERB.1-40
+interface GigabitEthernet0/2
+ description TRUNK_hacia_SW-2ERB.1-42
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ no shutdown
+end
+write memory
+
+
+Verificacion despues del Paso 4:
+En cada switch, correr:
+
+show interfaces trunk
+show vlan brief
+
+Resultado esperado:
+- Todos los enlaces entre switches aparecen como trunk.
+- VLAN 10-80 estan permitidas en los trunks.
+
+
+============================================================
+PASO 5 - CONFIGURAR PUERTOS DE ACCESO POR AREA
+============================================================
+
+Importante:
+El XML muestra muchos equipos llegando por TO y patch panels. En Packet Tracer,
+identifiquen visualmente el puerto exacto donde termina cada TO. Si varios
+equipos aparecen conectados al mismo puerto por error de patching, repatchen
+para que cada dispositivo tenga un puerto de switch propio.
+
+
+5.1 Puertos para LWAP / AP ligeros - VLAN 70 GestionTI
+
+Los AP ligeros deben quedar en VLAN 70 para descubrir el WLC por CAPWAP.
+
+Mapa detectado:
+- CIT-PBAP-01, CIT-PBAP-02 -> SW-1ERA.1-40
+- CIT-02AP-01 -> SW-2ERA.1-42
+- CIT-03AP-01, CIT-03AP-02, CIT-03AP-03 -> SW-3ERA.1-42
+- HUM-PBAP-02 y Light Weight Access Point6 -> SW-1ERB.1-42
+- HUM-02AP-05 -> SW-2ERB.1-40
+- HUM-02AP-01, HUM-02AP-02, HUM-02AP-03, HUM-02AP-04 -> SW-2ERBA.1-42
+- HUM-PBAP-03 -> SW-2ERBL.1-42
+- ING-04AP-01 -> SW-4ERC.1-42
+- ING-PBAP-01 -> SW-1ERC.1-40
+
+En cada switch donde haya APs, seleccionen SOLO los puertos fisicos de esos APs
+y peguen este bloque cambiando el rango si es necesario:
+
+enable
+configure terminal
+interface range FastEthernet0/1 - 24
+ description LWAP_Gestion_CAPWAP
+ switchport mode access
+ switchport access vlan 70
+ spanning-tree portfast
+ no shutdown
+end
+write memory
+
+Si ese switch tambien tiene PCs cableadas, NO usen todo Fa0/1-24. Usen solo
+los puertos donde realmente llegan los APs, por ejemplo:
+
+interface range FastEthernet0/3 - 6
+
+
+5.2 Puertos cableados de Preparatoria - VLAN 40
+
+Aplicar en los switches donde terminan PCs de laboratorio de Preparatoria:
+- SW-1ERC.1-42
+- SW-1ERC.1-40
+- SW-2ERB.1-42
+- SW-2ERB.1-40
+
+Abrir el switch correspondiente > CLI > pegar, ajustando el rango a los puertos
+donde estan las PCs:
+
+enable
+configure terminal
+interface range FastEthernet0/1 - 24
+ description PCs_Preparatoria
+ switchport mode access
+ switchport access vlan 40
+ spanning-tree portfast
+ no shutdown
+end
+write memory
+
+
+5.3 Puertos cableados de Entrenadores - VLAN 50
+
+Dispositivo principal detectado:
+SW-2ERA.1-42
+
+Equipos detectados:
+Entr1-A, Entr2-A
+
+Abrir SW-2ERA.1-42 > CLI > pegar, ajustando el rango al puerto real de esos
+equipos:
+
+enable
+configure terminal
+interface range FastEthernet0/13 - 24
+ description Entrenadores_Cableados
+ switchport mode access
+ switchport access vlan 50
+ spanning-tree portfast
+ no shutdown
+end
+write memory
+
+
+5.4 Puertos de Jueces, Servidor Local e Impresoras - VLAN 80
+
+Dispositivo principal detectado:
+SW-4ERC.1-42
+
+Equipos:
+ING-04SRV-01
+ING-04PRN-01
+ING-04PRN-02
+ING-04PRN-03
+ING-04PRN-04
+PCs de jueces si estan cableadas
+
+Abrir SW-4ERC.1-42 > CLI > pegar, ajustando el rango a los puertos reales:
+
+enable
+configure terminal
+interface range FastEthernet0/1 - 12
+ description Jueces_Servidor_Impresoras
+ switchport mode access
+ switchport access vlan 80
+ spanning-tree portfast
+ no shutdown
+end
+write memory
+
+Nota:
+Si ING-04AP-01 tambien esta conectado a SW-4ERC.1-42, su puerto debe quedarse
+en VLAN 70, no en VLAN 80, porque es LWAP de gestion CAPWAP.
+
+
+============================================================
+PASO 6 - CONFIGURAR EL SERVIDOR DHCP DHCP-1ERA.1-39
+============================================================
+
+Dispositivo:
+DHCP-1ERA.1-39
+
+6.1 IP estatica del servidor
+
+Abrir DHCP-1ERA.1-39 > Desktop > IP Configuration:
+
+IP Address: 172.23.45.130
+Subnet Mask: 255.255.255.192
+Default Gateway: 172.23.45.129
+DNS Server: 0.0.0.0
+
+6.2 Pools DHCP
+
+Abrir DHCP-1ERA.1-39 > Services > DHCP.
+
+Primero:
+- Apagar o eliminar el pool generico "serverPool".
+- Dejar el servicio DHCP en On.
+
+Crear o corregir estos pools:
+
+Pool: VLAN10_Primaria
+Default Gateway: 172.23.40.1
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.40.3
+Subnet Mask: 255.255.254.0
+Maximum Number of Users: 509
+
+Pool: VLAN20_Secundaria
+Default Gateway: 172.23.42.1
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.42.3
+Subnet Mask: 255.255.255.0
+Maximum Number of Users: 253
+
+Pool: VLAN30_Invitados
+Default Gateway: 172.23.43.1
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.43.3
+Subnet Mask: 255.255.255.0
+Maximum Number of Users: 253
+
+Pool: VLAN40_Preparatoria
+Default Gateway: 172.23.44.1
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.44.3
+Subnet Mask: 255.255.255.0
+Maximum Number of Users: 253
+
+Pool: VLAN50_Entrenadores
+Default Gateway: 172.23.45.1
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.45.3
+Subnet Mask: 255.255.255.192
+Maximum Number of Users: 61
+
+Pool: VLAN60_Prensa
+Default Gateway: 172.23.45.65
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.45.67
+Subnet Mask: 255.255.255.192
+Maximum Number of Users: 61
+
+Pool: VLAN70_GestionTI
+Default Gateway: 172.23.45.129
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.45.154
+Subnet Mask: 255.255.255.192
+Maximum Number of Users: 37
+
+Pool: VLAN80_Jueces
+Default Gateway: 172.23.45.193
+DNS Server: 0.0.0.0
+Start IP Address: 172.23.45.200
+Subnet Mask: 255.255.255.224
+Maximum Number of Users: 23
+
+Notas:
+- Se empieza en .3 en varias VLAN para reservar .1 como gateway y .2 para
+  interfaz dinamica del WLC si la usan.
+- En VLAN 70 se reserva .129 gateway, .130 DHCP, .131 WLC y .132-.153 para
+  gestion de switches/DNS si quieren documentarlo.
+- En VLAN 80 se reserva .194 para servidor local, .195-.198 para impresoras y
+  .199 para interfaz WLC/Jueces si la version de Packet Tracer la pide.
+
+
+============================================================
+PASO 7 - CONFIGURAR SERVIDOR LOCAL E IMPRESORAS
+============================================================
+
+7.1 Servidor Local de evaluacion
+
+Dispositivo:
+ING-04SRV-01
+
+Abrir ING-04SRV-01 > Desktop > IP Configuration:
+
+IP Address: 172.23.45.194
+Subnet Mask: 255.255.255.224
+Default Gateway: 172.23.45.193
+DNS Server: 0.0.0.0
+
+Despues:
+Desktop > Command Prompt:
+
+ping 172.23.45.193
+
+Resultado esperado:
+Debe responder el gateway de VLAN 80.
+
+
+7.2 Impresoras de red
+
+Configurar en Desktop/Config > IP Configuration:
+
+ING-04PRN-01
+IP Address: 172.23.45.195
+Subnet Mask: 255.255.255.224
+Default Gateway: 172.23.45.193
+
+ING-04PRN-02
+IP Address: 172.23.45.196
+Subnet Mask: 255.255.255.224
+Default Gateway: 172.23.45.193
+
+ING-04PRN-03
+IP Address: 172.23.45.197
+Subnet Mask: 255.255.255.224
+Default Gateway: 172.23.45.193
+
+ING-04PRN-04
+IP Address: 172.23.45.198
+Subnet Mask: 255.255.255.224
+Default Gateway: 172.23.45.193
+
+
+============================================================
+PASO 8 - CONFIGURAR WLC WLC-1ERA.1-35
+============================================================
+
+Dispositivo:
+WLC-1ERA.1-35
+
+8.1 Gestion del WLC
+
+Abrir WLC-1ERA.1-35 > Config > Management:
+
+IP Address: 172.23.45.131
+Subnet Mask: 255.255.255.192
+Default Gateway: 172.23.45.129
+
+Verificar que el cable del WLC vaya al puerto:
+SW-1ERA.1-42 GigabitEthernet1/0/2
+
+
+8.2 Interfaces dinamicas del WLC
+
+Si su version de Packet Tracer muestra una seccion de Interfaces en el WLC,
+crear estas interfaces. Si no existe esa pantalla, salten a 8.3 y usen solo
+el campo VLAN ID de cada WLAN.
+
+Nombre: vlan10_primaria
+VLAN ID: 10
+IP: 172.23.40.2
+Mask: 255.255.254.0
+Gateway: 172.23.40.1
+
+Nombre: vlan20_secundaria
+VLAN ID: 20
+IP: 172.23.42.2
+Mask: 255.255.255.0
+Gateway: 172.23.42.1
+
+Nombre: vlan30_invitados
+VLAN ID: 30
+IP: 172.23.43.2
+Mask: 255.255.255.0
+Gateway: 172.23.43.1
+
+Nombre: vlan40_preparatoria
+VLAN ID: 40
+IP: 172.23.44.2
+Mask: 255.255.255.0
+Gateway: 172.23.44.1
+
+Nombre: vlan50_entrenadores
+VLAN ID: 50
+IP: 172.23.45.2
+Mask: 255.255.255.192
+Gateway: 172.23.45.1
+
+Nombre: vlan60_prensa
+VLAN ID: 60
+IP: 172.23.45.66
+Mask: 255.255.255.192
+Gateway: 172.23.45.65
+
+Nombre: vlan80_jueces
+VLAN ID: 80
+IP: 172.23.45.199
+Mask: 255.255.255.224
+Gateway: 172.23.45.193
+
+
+8.3 WLANs / SSIDs
+
+Abrir WLC-1ERA.1-35 > Config > Wireless LANs.
+Crear o corregir:
+
+WLAN ID: 1
+Name: Primaria
+SSID: Primaria-Wifi
+VLAN ID: 10
+Interface: vlan10_primaria si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+WLAN ID: 2
+Name: Secundaria
+SSID: Secundaria-Wifi
+VLAN ID: 20
+Interface: vlan20_secundaria si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+WLAN ID: 3
+Name: Invitados
+SSID: Invitados-Wifi
+VLAN ID: 30
+Interface: vlan30_invitados si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+WLAN ID: 4
+Name: Preparatoria
+SSID: Preparatoria-Wifi
+VLAN ID: 40
+Interface: vlan40_preparatoria si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+WLAN ID: 5
+Name: Entrenadores
+SSID: Entrenadores-Wifi
+VLAN ID: 50
+Interface: vlan50_entrenadores si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+WLAN ID: 6
+Name: Prensa
+SSID: Prensa-Wifi
+VLAN ID: 60
+Interface: vlan60_prensa si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+WLAN ID: 7
+Name: Jueces
+SSID: Jueces-Wifi
+VLAN ID: 80
+Interface: vlan80_jueces si existe el campo
+Security: WPA2-PSK si esta disponible
+Passphrase: concurso123
+Status: Enabled
+
+Importante:
+En el XML actual, Primaria aparece con clave "consurso123". Corregir a:
+concurso123
+
+
+============================================================
+PASO 9 - CONFIGURAR LOS 16 LWAP
+============================================================
+
+Dispositivos LWAP:
+CIT-PBAP-02
+CIT-PBAP-01
+CIT-02AP-01
+CIT-03AP-03
+CIT-03AP-02
+CIT-03AP-01
+HUM-02AP-05
+Light Weight Access Point6
+HUM-PBAP-02
+HUM-02AP-01
+HUM-02AP-02
+HUM-02AP-03
+HUM-02AP-04
+HUM-PBAP-03
+ING-04AP-01
+ING-PBAP-01
+
+9.1 Renombrar AP generico
+
+Abrir Light Weight Access Point6 > Config > Settings:
+
+Display Name / Hostname: HUM-PBAP-01
+
+
+9.2 Configurar IP por DHCP y controlador primario
+
+En cada LWAP:
+
+1. Abrir AP > Config.
+2. En GigabitEthernet0 o FastEthernet0:
+   - DHCP: On
+3. En Wireless / CAPWAP / Controller, segun aparezca:
+   - Primary Controller / AC IP: 172.23.45.131
+4. Guardar/cerrar.
+
+Resultado esperado:
+- Cada AP recibe IP 172.23.45.154 o superior, dentro de VLAN 70.
+- En WLC-1ERA.1-35 aparece listado como AP asociado.
+
+Verificacion:
+Abrir WLC-1ERA.1-35 > Monitor / Access Points.
+Debe aparecer la lista de APs registrados.
+
+Si un AP no se registra:
+- Revisar que su puerto de switch este en VLAN 70.
+- Revisar que el trunk WLC-SW-1ERA.1-42 permita VLAN 70.
+- Revisar que DHCP VLAN70 entregue IP.
+- Revisar que Primary Controller sea 172.23.45.131.
+
+
+============================================================
+PASO 10 - CONFIGURAR CLIENTES FINALES
+============================================================
+
+10.1 Clientes cableados
+
+En cada PC cableada:
+Desktop > IP Configuration > DHCP.
+
+Debe recibir:
+- Preparatoria: IP 172.23.44.x, gateway 172.23.44.1
+- Entrenadores cableados: IP 172.23.45.3-63, gateway 172.23.45.1
+- Jueces cableados: IP 172.23.45.200-222, gateway 172.23.45.193
+
+
+10.2 Clientes inalambricos
+
+En cada laptop/smartphone:
+Desktop > PC Wireless o Config > Wireless0.
+
+Conectar segun area:
+
+Primaria:
+SSID: Primaria-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.40.x o 172.23.41.x
+
+Secundaria:
+SSID: Secundaria-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.42.x
+
+Invitados:
+SSID: Invitados-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.43.x
+
+Preparatoria si se prueba por Wi-Fi:
+SSID: Preparatoria-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.44.x
+
+Entrenadores:
+SSID: Entrenadores-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.45.3-63
+
+Prensa:
+SSID: Prensa-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.45.67-127
+
+Jueces:
+SSID: Jueces-Wifi
+Password: concurso123
+IP: DHCP
+Debe recibir: 172.23.45.200-222
+
+
+============================================================
+PASO 11 - PRUEBAS OBLIGATORIAS
+============================================================
+
+11.1 Prueba desde router
+
+Abrir RT-1ERA.1-45 > CLI:
+
+ping 172.23.45.130
+ping 172.23.45.194
+show ip interface brief
+show access-lists
+
+Esperado:
+- Ping a DHCP responde.
+- Ping a servidor local responde.
+
+
+11.2 Prueba desde switch principal
+
+Abrir SW-1ERA.1-42 > CLI:
+
+show vlan brief
+show interfaces trunk
+show running-config
+
+Esperado:
+- Gi1/0/1, Gi1/0/2 y Gi1/0/4 aparecen como trunks.
+- Gi1/0/5 aparece en VLAN 70.
+
+
+11.3 Prueba desde switches de acceso
+
+En cada switch:
+
+show interfaces trunk
+show vlan brief
+
+Esperado:
+- Uplink hacia distribucion aparece como trunk.
+- Puertos de usuario aparecen en su VLAN correcta.
+
+
+11.4 Prueba desde hosts autorizados
+
+Desde una laptop de Primaria:
+
+ipconfig
+ping 172.23.45.194
+
+Desde una laptop de Secundaria:
+
+ipconfig
+ping 172.23.45.194
+
+Desde una PC de Preparatoria:
+
+ipconfig
+ping 172.23.45.194
+
+Desde una PC/laptop de Jueces:
+
+ipconfig
+ping 172.23.45.194
+
+Esperado:
+- Todos esos pings deben responder.
+
+
+11.5 Prueba de aislamiento de Invitados
+
+Desde un cliente conectado a Invitados-Wifi:
+
+ipconfig
+ping 172.23.43.1
+ping 172.23.45.194
+ping 172.23.45.193
+
+Esperado:
+- Ping a 172.23.43.1 responde.
+- Ping a 172.23.45.194 falla.
+- Ping a 172.23.45.193 falla.
+
+Ese fallo es correcto: demuestra aislamiento de Invitados.
+
+
+============================================================
+PASO 12 - OPCIONAL: SALIDA A RED INSTITUCIONAL / INTERNET SIMULADA
+============================================================
+
+Usen este paso solo si el profesor pide salida a Internet o red Tec.
+El XML tiene RT-1ERA.1-38 conectado a RT-1ERA.1-45 por Gi0/0/1.
+
+12.1 En RT-1ERA.1-45
+
+Abrir RT-1ERA.1-45 > CLI > pegar:
+
+enable
+configure terminal
+interface GigabitEthernet0/0/1
+ description ENLACE_hacia_RT-1ERA.1-38
+ ip address 172.23.47.253 255.255.255.252
+ no shutdown
+!
+ip route 0.0.0.0 0.0.0.0 172.23.47.254
+end
+write memory
+
+
+12.2 En RT-1ERA.1-38
+
+Abrir RT-1ERA.1-38 > CLI > pegar:
+
+enable
+configure terminal
+hostname RT-1ERA.1-38
+interface GigabitEthernet0/0/1
+ description ENLACE_hacia_RT-1ERA.1-45
+ ip address 172.23.47.254 255.255.255.252
+ no shutdown
+!
+interface GigabitEthernet0/0/0
+ description RED_TEC_o_DNS_simulada
+ ip address 10.10.10.1 255.255.255.0
+ no shutdown
+!
+ip route 172.23.40.0 255.255.248.0 172.23.47.253
+end
+write memory
+
+
+12.3 DNS simulado opcional
+
+Si quieren usar DNS-1ERA.1-36 como servicio externo:
+
+Abrir DNS-1ERA.1-36 > Desktop > IP Configuration:
+
+IP Address: 10.10.10.10
+Subnet Mask: 255.255.255.0
+Default Gateway: 10.10.10.1
+DNS Server: 0.0.0.0
+
+Abrir DNS-1ERA.1-36 > Services > DNS:
+- DNS Service: On
+- Agregar registro:
+  Name: servidor-omi.local
+  Address: 172.23.45.194
+
+Si usan este DNS, pueden volver a DHCP-1ERA.1-39 y poner DNS Server:
+10.10.10.10
+en todos los pools.
+
+
+============================================================
+PASO 13 - EXPORTAR CONFIGURACIONES FINALES
+============================================================
+
+En cada router y switch:
+
+1. Abrir dispositivo > CLI.
+2. Ejecutar:
+
+show running-config
+
+3. Copiar la salida a un archivo .txt con este nombre sugerido:
+
+RT-1ERA.1-45.txt
+RT-1ERA.1-38.txt si usaron Internet simulado
+SW-1ERA.1-42.txt
+SW-1ERA.1-43.txt
+SW-1ERA.1-40.txt
+SW-2ERA.1-44.txt
+SW-2ERA.1-42.txt
+SW-3ERA.1-44.txt
+SW-3ERA.1-42.txt
+SW-1ERC.1-44.txt
+SW-1ERC.1-42.txt
+SW-1ERC.1-40.txt
+SW-4ERC.1-44.txt
+SW-4ERC.1-42.txt
+SW-1ERB.1-44.txt
+SW-1ERB.1-42.txt
+SW-2ERB.1-44.txt
+SW-2ERB.1-42.txt
+SW-2ERB.1-40.txt
+SW-2ERBA.1-44.txt
+SW-2ERBA.1-42.txt
+SW-2ERBL.1-44.txt
+SW-2ERBL.1-42.txt
+
+Para WLC, DHCP, Servidor Local e impresoras:
+- Tomar captura o anotar pantalla de Config/Services, porque no todo sale por CLI.
+
+
+============================================================
+CHECKLIST FINAL DE CIERRE
+============================================================
+
+[ ] RT-1ERA.1-45 tiene helpers hacia 172.23.45.130.
+[ ] RT-1ERA.1-45 no tiene helper en VLAN 70.
+[ ] ACL_INVITADOS_IN aplicada en Gi0/0/0.30.
+[ ] SW-1ERA.1-42 tiene trunk a router, WLC y SW-1ERA.1-43.
+[ ] Todos los trunks de fibra permiten VLAN 10-80.
+[ ] Puertos de AP estan en VLAN 70.
+[ ] Puertos de Preparatoria cableada estan en VLAN 40.
+[ ] Puertos de Entrenadores cableados estan en VLAN 50.
+[ ] Servidor Local e impresoras estan en VLAN 80 con IP estatica.
+[ ] DHCP-1ERA.1-39 tiene pools correctos y no tiene serverPool generico activo.
+[ ] WLC tiene WLANs 10,20,30,40,50,60,80.
+[ ] Los 16 LWAP aparecen asociados al WLC.
+[ ] Clientes autorizados reciben IP valida por DHCP.
+[ ] Primaria, Secundaria, Preparatoria y Jueces hacen ping a 172.23.45.194.
+[ ] Invitados NO puede hacer ping a 172.23.45.194.
+[ ] Configuraciones finales exportadas a .txt.
+
+Cuando todos los puntos esten marcados, la Fase 3 queda lista para documentar
+en el reporte final.
