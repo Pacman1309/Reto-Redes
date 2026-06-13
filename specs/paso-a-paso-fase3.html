@@ -1,0 +1,350 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Guia visual - Fase 3</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+      --line: rgba(255,255,255,.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, .18), transparent 28%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, .16), transparent 24%),
+        linear-gradient(180deg, #0b1220, #0f172a 40%, #111827);
+      color: var(--text);
+      line-height: 1.55;
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(34,197,94,.18), rgba(56,189,248,.12));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.28);
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      color: #d1fae5;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 1.1;
+    }
+
+    .lead {
+      max-width: 880px;
+      color: var(--muted);
+      margin: 0 0 20px;
+      font-size: 1.05rem;
+    }
+
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: white;
+      border: 1px solid transparent;
+      font-weight: 600;
+    }
+
+    .btn.primary { background: linear-gradient(135deg, var(--accent), #16a34a); }
+    .btn.secondary { background: rgba(255,255,255,.06); border-color: var(--line); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .card {
+      background: rgba(17, 24, 39, .88);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.18);
+    }
+
+    .card h2, .card h3 {
+      margin-top: 0;
+      margin-bottom: 10px;
+    }
+
+    .meta {
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-6 { grid-column: span 6; }
+    .span-12 { grid-column: span 12; }
+
+    .legend {
+      display: grid;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .ok { background: rgba(34,197,94,.16); color: #86efac; }
+    .info { background: rgba(56,189,248,.16); color: #7dd3fc; }
+    .warn { background: rgba(245,158,11,.16); color: #fcd34d; }
+    .danger { background: rgba(239,68,68,.16); color: #fca5a5; }
+
+    .steps {
+      display: grid;
+      gap: 14px;
+    }
+
+    .step {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .step::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 6px;
+      background: linear-gradient(180deg, var(--accent-2), var(--accent));
+    }
+
+    .step h3 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    ul {
+      margin: 10px 0 0 18px;
+      padding: 0;
+      color: var(--text);
+    }
+
+    .note {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: .95rem;
+    }
+
+    .toc {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .toc a {
+      display: block;
+      padding: 12px 14px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--line);
+    }
+
+    .toc a span {
+      display: block;
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: 4px;
+    }
+
+    code {
+      font-family: ui-monospace, SFMono-Regular, SF Mono, Consolas, monospace;
+      background: rgba(255,255,255,.07);
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    @media (max-width: 900px) {
+      .span-4, .span-6 { grid-column: span 12; }
+      .hero { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <div class="eyebrow">Guia visual de la Fase 3</div>
+      <h1>Reto Redes OMI</h1>
+      <p class="lead">Esta version resume la guia completa en un formato mas claro, con colores, secciones rapidas y un mapa de pasos. Para los comandos exactos y el detalle tecnico, usa el archivo original en txt.</p>
+      <div class="links">
+        <a class="btn primary" href="paso-a-paso-fase3.txt">Abrir guia tecnica</a>
+        <a class="btn secondary" href="../README.md">Volver al README</a>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top: 18px;">
+      <div class="card span-4">
+        <h2>Uso rapido</h2>
+        <div class="legend">
+          <div><span class="pill info">1</span> Abre la guia visual.</div>
+          <div><span class="pill ok">2</span> Sigue el mapa de pasos.</div>
+          <div><span class="pill warn">3</span> Usa el txt para pegar comandos completos.</div>
+          <div><span class="pill danger">4</span> Guarda cada equipo con <code>write memory</code>.</div>
+        </div>
+      </div>
+
+      <div class="card span-4">
+        <h2>Convenciones</h2>
+        <ul>
+          <li>La guia original tiene todos los bloques exactos.</li>
+          <li>Este archivo sirve como mapa visual para no perderte.</li>
+          <li>Los nombres de dispositivos se mantienen tal como aparecen en Packet Tracer.</li>
+        </ul>
+      </div>
+
+      <div class="card span-4">
+        <h2>Archivo original</h2>
+        <p class="meta">Si necesitas copiar y pegar configuraciones completas, abre <code>specs/paso-a-paso-fase3.txt</code>.</p>
+        <p class="meta">Si solo quieres orientarte rapido, quedate en esta pagina.</p>
+      </div>
+
+      <div class="card span-12">
+        <h2>Mapa de pasos</h2>
+        <div class="toc">
+          <a href="#paso-0">Paso 0 <span>Copia de seguridad</span></a>
+          <a href="#paso-1">Paso 1 <span>Router principal</span></a>
+          <a href="#paso-2">Paso 2 <span>Switch principal</span></a>
+          <a href="#paso-3">Paso 3 <span>VLANs en el resto</span></a>
+          <a href="#paso-4">Paso 4 <span>Trunks del backbone</span></a>
+          <a href="#paso-5">Paso 5 <span>Puertos de acceso</span></a>
+          <a href="#paso-6">Paso 6 <span>Servidor DHCP</span></a>
+          <a href="#paso-7">Paso 7 <span>Servidor local e impresoras</span></a>
+          <a href="#paso-8">Paso 8 <span>WLC</span></a>
+          <a href="#paso-9">Paso 9 <span>LWAP</span></a>
+          <a href="#paso-10">Paso 10 <span>Clientes finales</span></a>
+          <a href="#paso-11">Paso 11 <span>Pruebas obligatorias</span></a>
+          <a href="#paso-12">Paso 12 <span>Salida simulada</span></a>
+          <a href="#paso-13">Paso 13 <span>Exportar configuraciones</span></a>
+        </div>
+      </div>
+    </section>
+
+    <section class="steps" style="margin-top: 16px;">
+      <article class="card step" id="paso-0">
+        <h3><span class="pill info">Paso 0</span> Guardar copia de seguridad</h3>
+        <p class="meta">Haz una copia del archivo Packet Tracer antes de tocar nada.</p>
+      </article>
+
+      <article class="card step" id="paso-1">
+        <h3><span class="pill ok">Paso 1</span> Router principal RT-1ERA.1-45</h3>
+        <p class="meta">Configura el router, sus subinterfaces VLAN y la ACL de invitados.</p>
+      </article>
+
+      <article class="card step" id="paso-2">
+        <h3><span class="pill ok">Paso 2</span> Switch principal SW-1ERA.1-42</h3>
+        <p class="meta">Crea las VLANs base, define trunks y deja el switch como root primary.</p>
+      </article>
+
+      <article class="card step" id="paso-3">
+        <h3><span class="pill ok">Paso 3</span> VLANs en el resto de switches</h3>
+        <p class="meta">Replica la lista de VLANs en los demas switches de la topologia.</p>
+      </article>
+
+      <article class="card step" id="paso-4">
+        <h3><span class="pill warn">Paso 4</span> Trunks del backbone y fibra</h3>
+        <p class="meta">Ajusta los enlaces troncales para transportar todas las VLANs necesarias.</p>
+      </article>
+
+      <article class="card step" id="paso-5">
+        <h3><span class="pill warn">Paso 5</span> Puertos de acceso por area</h3>
+        <p class="meta">Asigna cada puerto a su VLAN segun el area, equipo o servicio.</p>
+      </article>
+
+      <article class="card step" id="paso-6">
+        <h3><span class="pill info">Paso 6</span> Servidor DHCP DHCP-1ERA.1-39</h3>
+        <p class="meta">Configura los pools, la puerta de enlace y el reparto de direcciones.</p>
+      </article>
+
+      <article class="card step" id="paso-7">
+        <h3><span class="pill info">Paso 7</span> Servidor local e impresoras</h3>
+        <p class="meta">Deja funcionando los servicios locales y sus equipos asociados.</p>
+      </article>
+
+      <article class="card step" id="paso-8">
+        <h3><span class="pill ok">Paso 8</span> WLC WLC-1ERA.1-35</h3>
+        <p class="meta">Configura el controlador inalambrico y sus ajustes basicos.</p>
+      </article>
+
+      <article class="card step" id="paso-9">
+        <h3><span class="pill ok">Paso 9</span> Los 16 LWAP</h3>
+        <p class="meta">Une cada punto de acceso al WLC y valida su registro.</p>
+      </article>
+
+      <article class="card step" id="paso-10">
+        <h3><span class="pill ok">Paso 10</span> Clientes finales</h3>
+        <p class="meta">Verifica que PCs y dispositivos finales queden en su red correcta.</p>
+      </article>
+
+      <article class="card step" id="paso-11">
+        <h3><span class="pill danger">Paso 11</span> Pruebas obligatorias</h3>
+        <p class="meta">Haz ping, revisa conectividad y confirma que todo responda como debe.</p>
+      </article>
+
+      <article class="card step" id="paso-12">
+        <h3><span class="pill warn">Paso 12</span> Salida a red institucional o internet simulada</h3>
+        <p class="meta">Si aplica, prueba la salida externa sin romper el aislamiento interno.</p>
+      </article>
+
+      <article class="card step" id="paso-13">
+        <h3><span class="pill info">Paso 13</span> Exportar configuraciones finales</h3>
+        <p class="meta">Guarda las configuraciones definitivas para entregar el proyecto.</p>
+      </article>
+    </section>
+  </div>
+</body>
+</html>
