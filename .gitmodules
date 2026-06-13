@@ -1,0 +1,3 @@
+[submodule "src/pka2xml"]
+	path = src/pka2xml
+	url = https://github.com/mircodz/pka2xml.git
