@@ -4,7 +4,7 @@ Fuente auditada: data/output/Reto-Redes-actual.xml
 Fecha: 2026-06-13
 
 Objetivo:
-Dejar la red al 100% para la entrega: VLANs, trunks, DHCP, WLC/LWAP,
+Dejar la red al 100% para la entrega: VTP, VLANs, trunks, DHCP, WLC/LWAP,
 servidor local, aislamiento de Invitados, pruebas de ping y export de configs.
 
 Convencion:
@@ -14,6 +14,8 @@ Convencion:
 - Si Packet Tracer pregunta "Continue with configuration dialog?", escriban no.
 - Si un modelo Switch-PT viejo marca error en un comando de STP o trunk
   avanzado, ignoren solo ese comando y sigan con el resto.
+- Para VTP usen siempre el mismo dominio y password en todos los switches:
+  dominio OMI-REDES, password OMI2026, version 2.
 - No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son
   GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.
 
@@ -148,6 +150,10 @@ Abrir SW-1ERA.1-42 > CLI > pegar:
 enable
 configure terminal
 hostname SW-1ERA.1-42
+vtp domain OMI-REDES
+vtp mode server
+vtp version 2
+vtp password OMI2026
 !
 vlan 10
  name Primaria
@@ -200,15 +206,17 @@ Verificacion:
 
 show vlan brief
 show interfaces trunk
+show vtp status
 
 Resultado esperado:
 - VLAN 10,20,30,40,50,60,70,80 existen.
 - Trunks activos en Gi1/0/1, Gi1/0/2 y Gi1/0/4.
 - Gi1/0/5 en access VLAN 70.
+- VTP aparece en modo Server, dominio OMI-REDES y version 2.
 
 
 ============================================================
-PASO 3 - CREAR VLANs EN TODOS LOS SWITCHES RESTANTES
+PASO 3 - CONFIGURAR VTP CLIENT EN TODOS LOS SWITCHES RESTANTES
 ============================================================
 
 Dispositivos:
@@ -240,24 +248,10 @@ Despues cambien el hostname en la primera linea por el nombre real del switch.
 enable
 configure terminal
 hostname NOMBRE_DEL_SWITCH
-!
-vlan 10
- name Primaria
-vlan 20
- name Secundaria
-vlan 30
- name Invitados
-vlan 40
- name Preparatoria
-vlan 50
- name Entrenadores
-vlan 60
- name Prensa
-vlan 70
- name GestionTI
-vlan 80
- name Jueces
-!
+vtp domain OMI-REDES
+vtp mode client
+vtp version 2
+vtp password OMI2026
 end
 write memory
 
@@ -266,6 +260,23 @@ Si estan en SW-2ERA.1-42, cambien:
 hostname NOMBRE_DEL_SWITCH
 por:
 hostname SW-2ERA.1-42
+
+Verificacion en cada switch cliente:
+
+show vtp status
+
+Resultado esperado:
+- VTP domain name: OMI-REDES.
+- VTP operating mode: Client.
+- La version debe ser 2.
+- Las VLAN 10-80 apareceran despues de que el trunk hacia el servidor VTP
+  quede activo en el Paso 4.
+
+Nota:
+Si un Switch-PT viejo no acepta "vtp password" o "vtp version 2", apliquen
+por lo menos "vtp domain OMI-REDES" y "vtp mode client". Si VTP no propaga
+en ese modelo, usen el bloque manual de VLANs del Paso 2 como respaldo solo
+en ese switch.
 
 
 ============================================================
@@ -706,10 +717,13 @@ En cada switch, correr:
 
 show interfaces trunk
 show vlan brief
+show vtp status
 
 Resultado esperado:
 - Todos los enlaces entre switches aparecen como trunk.
 - VLAN 10-80 estan permitidas en los trunks.
+- VTP mantiene dominio OMI-REDES en todos los switches.
+- Los switches cliente ya muestran VLAN 10,20,30,40,50,60,70,80 aprendidas.
 
 
 ============================================================
@@ -1261,11 +1275,13 @@ Abrir SW-1ERA.1-42 > CLI:
 
 show vlan brief
 show interfaces trunk
+show vtp status
 show running-config
 
 Esperado:
 - Gi1/0/1, Gi1/0/2 y Gi1/0/4 aparecen como trunks.
 - Gi1/0/5 aparece en VLAN 70.
+- VTP aparece como Server, dominio OMI-REDES, version 2.
 
 
 11.3 Prueba desde switches de acceso
@@ -1274,10 +1290,13 @@ En cada switch:
 
 show interfaces trunk
 show vlan brief
+show vtp status
 
 Esperado:
 - Uplink hacia distribucion aparece como trunk.
 - Puertos de usuario aparecen en su VLAN correcta.
+- VTP aparece como Client, dominio OMI-REDES, version 2.
+- VLAN 10,20,30,40,50,60,70,80 se ven aprendidas por VTP.
 
 
 11.4 Prueba desde hosts autorizados
@@ -1438,6 +1457,9 @@ CHECKLIST FINAL DE CIERRE
 [ ] RT-1ERA.1-45 tiene helpers hacia 172.23.45.130.
 [ ] RT-1ERA.1-45 no tiene helper en VLAN 70.
 [ ] ACL_INVITADOS_IN aplicada en Gi0/0/0.30.
+[ ] SW-1ERA.1-42 esta como VTP server en dominio OMI-REDES version 2.
+[ ] Switches restantes estan como VTP client en dominio OMI-REDES version 2.
+[ ] VLAN 10-80 se propagan por VTP despues de activar trunks.
 [ ] SW-1ERA.1-42 tiene trunk a router, WLC y SW-1ERA.1-43.
 [ ] Todos los trunks de fibra permiten VLAN 10-80.
 [ ] Puertos de AP estan en VLAN 70.

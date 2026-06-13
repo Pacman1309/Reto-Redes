@@ -279,7 +279,7 @@
 <a href="#paso-0-guardar-copia-de-seguridad">PASO 0 - Guardar Copia de Seguridad</a>
 <a href="#paso-1-corregir-el-router-principal-rt-1era-1-45">PASO 1 - Corregir El Router Principal Rt-1Era.1-45</a>
 <a href="#paso-2-configurar-el-switch-principal-sw-1era-1-42">PASO 2 - Configurar El Switch Principal Sw-1Era.1-42</a>
-<a href="#paso-3-crear-vlans-en-todos-los-switches-restantes">PASO 3 - Crear Vlans En Todos Los Switches Restantes</a>
+<a href="#paso-3-configurar-vtp-client-en-todos-los-switches-restantes">PASO 3 - Configurar VTP Client En Todos Los Switches Restantes</a>
 <a href="#paso-4-configurar-trunks-del-backbone-y-fibra">PASO 4 - Configurar Trunks del Backbone y Fibra</a>
 <a href="#paso-5-configurar-puertos-de-acceso-por-area">PASO 5 - Configurar Puertos de Acceso Por Area</a>
 <a href="#paso-6-configurar-el-servidor-dhcp-dhcp-1era-1-39">PASO 6 - Configurar El Servidor Dhcp Dhcp-1Era.1-39</a>
@@ -298,7 +298,7 @@
         <section class="hero" id="inicio">
           <p class="eyebrow">Guia completa navegable</p>
           <h1>Guia Paso A Paso Para Terminar La Fase 3 En Packet Tracer</h1>
-          <p class="lead">Dejar la red al 100% para la entrega: VLANs, trunks, DHCP, WLC/LWAP, servidor local, aislamiento de Invitados, pruebas de ping y export de configs.</p>
+          <p class="lead">Dejar la red al 100% para la entrega: VTP, VLANs, trunks, DHCP, WLC/LWAP, servidor local, aislamiento de Invitados, pruebas de ping y export de configs.</p>
           <div class="facts">
 <div class="fact"><span>Proyecto</span><strong>Reto Redes OMI</strong></div>
 <div class="fact"><span>Fuente auditada</span><strong>data/output/Reto-Redes-actual.xml</strong></div>
@@ -318,6 +318,7 @@
 <li>Al final de cada bloque se incluye "write memory" para guardar.</li>
 <li>Si Packet Tracer pregunta "Continue with configuration dialog?", escriban no.</li>
 <li>Si un modelo Switch-PT viejo marca error en un comando de STP o trunk avanzado, ignoren solo ese comando y sigan con el resto.</li>
+<li>Para VTP usen siempre el mismo dominio y password en todos los switches: dominio OMI-REDES, password OMI2026, version 2.</li>
 <li>No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.</li>
             </ul>
           </div>
@@ -463,6 +464,10 @@ show access-lists</code></pre></div>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
 configure terminal
 hostname SW-1ERA.1-42
+vtp domain OMI-REDES
+vtp mode server
+vtp version 2
+vtp password OMI2026
 !
 vlan 10
  name Primaria
@@ -512,21 +517,23 @@ end
 write memory</code></pre></div>
 <h3>Verificacion</h3>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show vlan brief
-show interfaces trunk</code></pre></div>
+show interfaces trunk
+show vtp status</code></pre></div>
 <h3>Resultado esperado</h3>
 <ul>
 <li>VLAN 10,20,30,40,50,60,70,80 existen.</li>
 <li>Trunks activos en Gi1/0/1, Gi1/0/2 y Gi1/0/4.</li>
 <li>Gi1/0/5 en access VLAN 70.</li>
+<li>VTP aparece en modo Server, dominio OMI-REDES y version 2.</li>
 </ul>
   </div>
 </section>
-<section class="guide-section" id="paso-3-crear-vlans-en-todos-los-switches-restantes">
+<section class="guide-section" id="paso-3-configurar-vtp-client-en-todos-los-switches-restantes">
   <div class="section-head">
-    <label class="done"><input type="checkbox" aria-label="Marcar PASO 3 - Crear Vlans En Todos Los Switches Restantes como terminado"></label>
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 3 - Configurar VTP Client En Todos Los Switches Restantes como terminado"></label>
     <div>
       <span class="section-pill">Paso 3</span>
-      <h2>Crear Vlans En Todos Los Switches Restantes</h2>
+      <h2>Configurar VTP Client En Todos Los Switches Restantes</h2>
     </div>
   </div>
   <div class="section-body">
@@ -558,24 +565,10 @@ show interfaces trunk</code></pre></div>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
 configure terminal
 hostname NOMBRE_DEL_SWITCH
-!
-vlan 10
- name Primaria
-vlan 20
- name Secundaria
-vlan 30
- name Invitados
-vlan 40
- name Preparatoria
-vlan 50
- name Entrenadores
-vlan 60
- name Prensa
-vlan 70
- name GestionTI
-vlan 80
- name Jueces
-!
+vtp domain OMI-REDES
+vtp mode client
+vtp version 2
+vtp password OMI2026
 end
 write memory</code></pre></div>
 <h3>Ejemplo</h3>
@@ -583,6 +576,17 @@ write memory</code></pre></div>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>hostname NOMBRE_DEL_SWITCH</code></pre></div>
 <p>por:</p>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>hostname SW-2ERA.1-42</code></pre></div>
+<h3>Verificacion en cada switch cliente</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show vtp status</code></pre></div>
+<h3>Resultado esperado</h3>
+<ul>
+<li>VTP domain name: OMI-REDES.</li>
+<li>VTP operating mode: Client.</li>
+<li>La version debe ser 2.</li>
+<li>Las VLAN 10-80 apareceran despues de que el trunk hacia el servidor VTP quede activo en el Paso 4.</li>
+</ul>
+<h3>Nota</h3>
+<p>Si un Switch-PT viejo no acepta "vtp password" o "vtp version 2", apliquen por lo menos "vtp domain OMI-REDES" y "vtp mode client". Si VTP no propaga en ese modelo, usen el bloque manual de VLANs del Paso 2 como respaldo solo en ese switch.</p>
   </div>
 </section>
 <section class="guide-section" id="paso-4-configurar-trunks-del-backbone-y-fibra">
@@ -1004,11 +1008,14 @@ write memory</code></pre></div>
 <h3>Verificacion despues del Paso 4</h3>
 <p>En cada switch, correr:</p>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show interfaces trunk
-show vlan brief</code></pre></div>
+show vlan brief
+show vtp status</code></pre></div>
 <h3>Resultado esperado</h3>
 <ul>
 <li>Todos los enlaces entre switches aparecen como trunk.</li>
 <li>VLAN 10-80 estan permitidas en los trunks.</li>
+<li>VTP mantiene dominio OMI-REDES en todos los switches.</li>
+<li>Los switches cliente ya muestran VLAN 10,20,30,40,50,60,70,80 aprendidas.</li>
 </ul>
   </div>
 </section>
@@ -1576,20 +1583,25 @@ show access-lists</code></pre></div>
 <p>Abrir SW-1ERA.1-42 &gt; CLI:</p>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show vlan brief
 show interfaces trunk
+show vtp status
 show running-config</code></pre></div>
 <h3>Esperado</h3>
 <ul>
 <li>Gi1/0/1, Gi1/0/2 y Gi1/0/4 aparecen como trunks.</li>
 <li>Gi1/0/5 aparece en VLAN 70.</li>
+<li>VTP aparece como Server, dominio OMI-REDES, version 2.</li>
 </ul>
 <h3>11.3 Prueba desde switches de acceso</h3>
 <h3>En cada switch</h3>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show interfaces trunk
-show vlan brief</code></pre></div>
+show vlan brief
+show vtp status</code></pre></div>
 <h3>Esperado</h3>
 <ul>
 <li>Uplink hacia distribucion aparece como trunk.</li>
 <li>Puertos de usuario aparecen en su VLAN correcta.</li>
+<li>VTP aparece como Client, dominio OMI-REDES, version 2.</li>
+<li>VLAN 10,20,30,40,50,60,70,80 se ven aprendidas por VTP.</li>
 </ul>
 <h3>11.4 Prueba desde hosts autorizados</h3>
 <h3>Desde una laptop de Primaria</h3>
@@ -1741,6 +1753,9 @@ write memory</code></pre></div>
 <label class="check"><input type="checkbox"> <span>RT-1ERA.1-45 tiene helpers hacia 172.23.45.130.</span></label>
 <label class="check"><input type="checkbox"> <span>RT-1ERA.1-45 no tiene helper en VLAN 70.</span></label>
 <label class="check"><input type="checkbox"> <span>ACL_INVITADOS_IN aplicada en Gi0/0/0.30.</span></label>
+<label class="check"><input type="checkbox"> <span>SW-1ERA.1-42 esta como VTP server en dominio OMI-REDES version 2.</span></label>
+<label class="check"><input type="checkbox"> <span>Switches restantes estan como VTP client en dominio OMI-REDES version 2.</span></label>
+<label class="check"><input type="checkbox"> <span>VLAN 10-80 se propagan por VTP despues de activar trunks.</span></label>
 <label class="check"><input type="checkbox"> <span>SW-1ERA.1-42 tiene trunk a router, WLC y SW-1ERA.1-43.</span></label>
 <label class="check"><input type="checkbox"> <span>Todos los trunks de fibra permiten VLAN 10-80.</span></label>
 <label class="check"><input type="checkbox"> <span>Puertos de AP estan en VLAN 70.</span></label>

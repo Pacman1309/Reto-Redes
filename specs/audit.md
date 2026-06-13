@@ -3,13 +3,13 @@
 Archivo auditado: `data/output/Reto-Redes-actual.xml`  
 Archivo anterior de referencia: `data/output/Reto-Redes.xml`  
 Fecha de auditoria: 2026-06-13  
-Metodo: parseo XML estructurado con foco en `DEVICE`, `RUNNINGCONFIG`, `VLANS`, `DHCP_SERVERS`, endpoints, WLC/CAPWAP, WLANs y `LINK`.
+Metodo: parseo XML estructurado con foco en `DEVICE`, `RUNNINGCONFIG`, `VLANS`, `VTP`, `DHCP_SERVERS`, endpoints, WLC/CAPWAP, WLANs y `LINK`.
 
 ## Resumen Ejecutivo
 
 El archivo actual ya incluye un avance importante frente al XML anterior: los AP autonomos fueron reemplazados por AP ligeros 3702i y se agrego/configuro un WLC con IP de gestion en la VLAN 70. Tambien se conecto el WLC al switch principal `SW-1ERA.1-42` mediante un puerto access en VLAN 70.
 
-El core de capa 3 sigue practicamente igual: el router tiene subinterfaces dot1Q para VLAN 10-80 y el switch principal conserva las VLAN base. El punto critico es que la configuracion logica todavia no esta distribuida al backbone, switches de acceso, LWAPs y endpoints. En otras palabras: ya se ve mas como una arquitectura centralizada con WLC, pero aun no esta operativa de punta a punta.
+El core de capa 3 sigue practicamente igual: el router tiene subinterfaces dot1Q para VLAN 10-80 y el switch principal conserva las VLAN base. El XML tambien trae bloques internos de VTP, pero sin dominio ni comandos `vtp` visibles en las running-configs; por eso todavia no hay propagacion controlada de VLANs. El punto critico es que la configuracion logica todavia no esta distribuida al backbone, switches de acceso, LWAPs y endpoints. En otras palabras: ya se ve mas como una arquitectura centralizada con WLC, pero aun no esta operativa de punta a punta.
 
 Estado general estimado:
 
@@ -17,15 +17,16 @@ Estado general estimado:
 | --- | ---: | --- |
 | Topologia fisica y objetos TIA/EIA | 78% | Parcialmente listo |
 | VLSM y VLAN base | 80% | Parcialmente listo |
+| VTP | 10% | Campos detectados, sin dominio/configuracion util |
 | Router-on-a-stick | 70% | Funcional en core, requiere ajustes |
 | DHCP como servicio | 60% | Pools creados, relay incorrecto |
-| Switching de distribucion/acceso | 25% | Falta propagar VLAN/trunks |
+| Switching de distribucion/acceso | 25% | Falta VTP, propagacion VLAN/trunks |
 | Wireless con WLC/LWAP | 45% | WLC avanzado, APs no asociados |
 | Seguridad por ACL | 0% | Pendiente |
 | Pruebas de conectividad | 0% | Pendiente |
 | Export de configuraciones | 0% | Pendiente |
 
-Conclusion: vas mejor que en el primer XML. El cambio a WLC/LWAP es correcto para una red de alta densidad, pero todavia falta completar CAPWAP, trunks/access VLANs, DHCP relay, ACL de Invitados y pruebas ping. La maqueta fisica ya esta bastante armada; lo que falta es cerrar la operacion logica.
+Conclusion: vas mejor que en el primer XML. El cambio a WLC/LWAP es correcto para una red de alta densidad, pero todavia falta completar VTP, CAPWAP, trunks/access VLANs, DHCP relay, ACL de Invitados y pruebas ping. La maqueta fisica ya esta bastante armada; lo que falta es cerrar la operacion logica.
 
 ## Cambios Detectados Frente Al XML Anterior
 
@@ -109,6 +110,7 @@ Evidencia:
 
 - Existe como `3650-24PS`.
 - Tiene VLAN 10,20,30,40,50,60,70,80.
+- En `VLANS` aparecen las VLAN base y en `VTP` se detecta modo numerico `0`, version `1`, dominio vacio y revision `48`.
 - `Gi1/0/4` esta configurado como trunk hacia `RT-1ERA.1-45`.
 - `Gi1/0/5` esta en access VLAN 70 para `DHCP-1ERA.1-39`.
 - `Gi1/0/2` ahora tiene `description WLC` y esta en access VLAN 70 para el controlador.
@@ -116,6 +118,8 @@ Evidencia:
 Problemas:
 
 - Solo se detecta trunk efectivo hacia el router.
+- No se detectan comandos `vtp domain`, `vtp mode`, `vtp version` ni `vtp password` en running-config.
+- El dominio VTP esta vacio, por lo que no hay una estrategia VTP documentada para propagar VLANs.
 - No hay trunks configurados desde `SW-1ERA.1-42` hacia el backbone o closets.
 - No hay evidencia de propagacion de VLANs a `SW-1ERA.1-43`.
 - No hay SVIs de administracion ni gateway de management en los switches.
@@ -125,6 +129,7 @@ Accion recomendada:
 
 - Configurar como trunk el puerto que conecta `SW-1ERA.1-42` hacia `SW-1ERA.1-43`.
 - Permitir VLAN 10,20,30,40,50,60,70,80 en ese enlace.
+- Configurar `SW-1ERA.1-42` como VTP server: dominio `OMI-REDES`, version 2 y password `OMI2026`.
 - Mantener `Gi1/0/2` del WLC en VLAN 70 si Packet Tracer esta trabajando con WLC en modo centralizado basico.
 - Configurar administracion del switch en VLAN 70 si la rubrica pide gestion remota.
 
@@ -212,9 +217,34 @@ Accion recomendada:
 - Definir controlador primario `172.23.45.131` en cada LWAP o asegurar descubrimiento CAPWAP.
 - Verificar que los APs aparezcan registrados en el WLC antes de probar clientes.
 
-## Switching De Acceso Y Backbone
+## VTP Y Switching De Acceso/Backbone
 
 Veredicto: FAIL pendiente.
+
+### VTP
+
+Evidencia:
+
+- El XML contiene bloques `VTP` en switches, pero el dominio aparece vacio.
+- En `SW-1ERA.1-42` se observan VLAN 10-80 y revision VTP interna, pero no hay comandos `vtp` en running-config.
+- En los switches de acceso solo se observan VLANs por defecto o configuracion base.
+
+Problemas:
+
+- No hay un dominio VTP comun.
+- No hay servidor VTP definido de forma explicita.
+- No hay clientes VTP documentados en los switches restantes.
+- Sin trunks activos entre switches, VTP tampoco podria transportar anuncios de VLAN aunque estuviera configurado.
+
+Accion recomendada:
+
+- Usar `SW-1ERA.1-42` como VTP server.
+- Configurar dominio `OMI-REDES`, version 2 y password `OMI2026`.
+- Configurar todos los switches restantes como VTP client con el mismo dominio, version y password.
+- Crear VLAN 10,20,30,40,50,60,70,80 solo en el servidor VTP.
+- Verificar con `show vtp status`, `show vlan brief` y `show interfaces trunk`.
+
+### Switching De Acceso Y Backbone
 
 Los siguientes switches existen fisicamente, pero siguen con configuracion IOS base: hostname generico `Switch`, sin VLANs OMI, sin trunks, sin puertos access por area y sin startup-config util.
 
@@ -245,7 +275,7 @@ Los siguientes switches existen fisicamente, pero siguen con configuracion IOS b
 Accion recomendada:
 
 - Nombrar cada switch con su hostname real.
-- Crear VLAN 10-80 en cada switch que participe.
+- Configurar VTP client en cada switch de acceso/distribucion para que VLAN 10-80 se aprendan desde `SW-1ERA.1-42`.
 - Configurar trunks en enlaces hacia `SW-1ERA.1-43`, `SW-1ERC.1-44`, `SW-1ERB.1-44` y switches `.44` de closets.
 - Configurar access ports por area: Primaria VLAN 10, Secundaria VLAN 20, Invitados VLAN 30, Preparatoria VLAN 40, Entrenadores VLAN 50, Prensa VLAN 60, GestionTI VLAN 70, Jueces VLAN 80.
 - Guardar `startup-config` en todos los equipos, no solo en el core.
@@ -387,6 +417,8 @@ Nota: si en la simulacion no hay Internet real, el `permit any` sirve solo para 
 | --- | --- | --- |
 | Subinterfaces dot1Q en Router 4331 | PASS parcial | VLAN 10-80 presentes |
 | Gateways VLSM correctos | PASS parcial | Coinciden con el bloque `172.23.40.0/21` |
+| VTP server/client | FAIL | Dominio vacio y sin comandos VTP en running-config |
+| Propagacion VLAN por VTP | FAIL | VLANs no distribuidas a switches de acceso |
 | DHCP pools por VLAN | PASS parcial | Pools creados, helper incorrecto |
 | Trunk router-switch principal | PASS | `Gi1/0/4` en `SW-1ERA.1-42` |
 | Trunks backbone/fibra | FAIL | Switches de closets sin trunk |
@@ -401,20 +433,21 @@ Nota: si en la simulacion no hay Internet real, el `permit any` sirve solo para 
 ## Lo Que Hace Falta En Orden De Prioridad
 
 1. Corregir DHCP relay del router hacia `172.23.45.130` y quitar helper en VLAN 70.
-2. Configurar trunks del backbone, especialmente desde `SW-1ERA.1-42` hacia `SW-1ERA.1-43` y sobre los enlaces de fibra.
-3. Propagar VLAN 10-80 a todos los switches relevantes.
-4. Configurar access ports por area y puertos de APs/LWAPs en la VLAN de gestion correcta.
-5. Completar WLC: interfaces dinamicas, `INTERFACE_NAME`, WLAN de Jueces y clave correcta.
-6. Asociar los 16 LWAP al WLC con controlador primario `172.23.45.131`.
-7. Eliminar o corregir `serverPool` generico del DHCP.
-8. Asignar IP estatica al Servidor Local `ING-04SRV-01`, impresoras y DNS si aplica.
-9. Aplicar ACL de Invitados en la subinterfaz VLAN 30.
-10. Renovar DHCP en endpoints hasta eliminar APIPA.
-11. Ejecutar pruebas ping por segmento y documentar resultados PASS/FAIL.
-12. Exportar configuraciones finales de router, switches, WLC y dispositivos clave.
+2. Configurar VTP: `SW-1ERA.1-42` como server y switches restantes como client en dominio `OMI-REDES`.
+3. Configurar trunks del backbone, especialmente desde `SW-1ERA.1-42` hacia `SW-1ERA.1-43` y sobre los enlaces de fibra.
+4. Verificar que VLAN 10-80 se propaguen por VTP a todos los switches relevantes.
+5. Configurar access ports por area y puertos de APs/LWAPs en la VLAN de gestion correcta.
+6. Completar WLC: interfaces dinamicas, `INTERFACE_NAME`, WLAN de Jueces y clave correcta.
+7. Asociar los 16 LWAP al WLC con controlador primario `172.23.45.131`.
+8. Eliminar o corregir `serverPool` generico del DHCP.
+9. Asignar IP estatica al Servidor Local `ING-04SRV-01`, impresoras y DNS si aplica.
+10. Aplicar ACL de Invitados en la subinterfaz VLAN 30.
+11. Renovar DHCP en endpoints hasta eliminar APIPA.
+12. Ejecutar pruebas ping por segmento y documentar resultados PASS/FAIL.
+13. Exportar configuraciones finales de router, switches, WLC y dispositivos clave.
 
 ## Veredicto Actual
 
-El avance mas importante del archivo actual es la migracion a WLC/LWAP. Eso mejora el diseno para alta densidad y se alinea mejor con Primaria, Secundaria, Prensa, Entrenadores, Invitados y Jueces. Pero todavia no se puede considerar funcional porque los APs no estan unidos al controlador, las VLAN no viajan por el backbone, DHCP relay apunta al gateway equivocado y no existe ACL de Invitados.
+El avance mas importante del archivo actual es la migracion a WLC/LWAP. Eso mejora el diseno para alta densidad y se alinea mejor con Primaria, Secundaria, Prensa, Entrenadores, Invitados y Jueces. Pero todavia no se puede considerar funcional porque VTP no tiene dominio/configuracion util, los APs no estan unidos al controlador, las VLAN no viajan por el backbone, DHCP relay apunta al gateway equivocado y no existe ACL de Invitados.
 
-Prioridad inmediata: primero hacer que el core entregue DHCP correctamente; despues levantar trunks/access VLANs; despues registrar APs al WLC; finalmente aplicar seguridad y correr pings. Ese orden reduce ruido al depurar en Packet Tracer.
+Prioridad inmediata: primero hacer que el core entregue DHCP correctamente; despues configurar VTP y levantar trunks/access VLANs; despues registrar APs al WLC; finalmente aplicar seguridad y correr pings. Ese orden reduce ruido al depurar en Packet Tracer.
