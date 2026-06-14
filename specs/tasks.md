@@ -36,7 +36,8 @@ Leyenda: `[x]` terminado, `[~]` parcial, `[ ]` pendiente.
 ## Switches De Acceso
 
 - [ ] Nombrar switches por edificio/area siguiendo TIA/EIA-606-B.
-- [ ] Crear VLANs 10-80 en cada switch donde aplique.
+- [ ] Configurar VTP client con orden correcto: dominio, version 2, password y al final `vtp mode client`.
+- [ ] Crear VLANs 10-80 manualmente solo como respaldo si un modelo no propaga VTP.
 - [ ] Configurar uplinks como trunk.
 - [ ] Configurar puertos de AP como access en la VLAN del area atendida.
 - [ ] Configurar puertos de PCs cableadas como access en la VLAN del laboratorio.
@@ -64,6 +65,14 @@ Leyenda: `[x]` terminado, `[~]` parcial, `[ ]` pendiente.
 - [ ] Probar que Invitados no accede a `172.23.45.192/27` ni a otros segmentos internos.
 - [ ] Probar que Invitados conserva salida permitida si hay nube/Internet.
 - [ ] Validar que Jueces y competidores autorizados si alcanzan el Servidor Local.
+
+## Administracion Remota Telnet
+
+- [ ] Configurar `enable secret OMIenable2026` en router y switches.
+- [ ] Configurar VTY con `password OMItelnet2026`, `login` y `transport input telnet`.
+- [ ] Asignar IP de gestion en `interface vlan 70` a switches (`172.23.45.132-.152`).
+- [ ] Verificar Telnet desde un host de GestionTI o `DHCP-1ERA.1-39`.
+- [ ] Verificar que Telnet desde Invitados hacia equipos internos falle por la ACL.
 
 ## Pruebas
 

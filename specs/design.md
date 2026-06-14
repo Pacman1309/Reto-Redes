@@ -114,6 +114,10 @@ Nota tecnica: el XML actual usa `ip helper-address 172.23.45.129` en las subinte
 enable
 configure terminal
 hostname SW-1ERA.1-42
+vtp domain OMI-REDES
+vtp mode server
+vtp version 2
+vtp password OMI2026
 !
 vlan 10
  name Primaria
@@ -163,23 +167,10 @@ Aplicar en cada switch de acceso segun edificio y area. Ajustar hostname, uplink
 enable
 configure terminal
 hostname SW-AREA-ID
-!
-vlan 10
- name Primaria
-vlan 20
- name Secundaria
-vlan 30
- name Invitados
-vlan 40
- name Preparatoria
-vlan 50
- name Entrenadores
-vlan 60
- name Prensa
-vlan 70
- name GestionTI
-vlan 80
- name Jueces
+vtp domain OMI-REDES
+vtp version 2
+vtp password OMI2026
+vtp mode client
 !
 interface GigabitEthernet0/1
  description TRUNK_hacia_distribucion_o_patch_panel_fibra
@@ -194,6 +185,58 @@ interface range FastEthernet0/1 - 24
  spanning-tree portfast
  no shutdown
 !
+end
+write memory
+```
+
+Nota VTP: en switches cliente, `vtp version 2` debe configurarse antes de `vtp mode client`. Si el equipo ya quedo en cliente y muestra `cannot modify version in VTP client mode`, cambiar temporalmente a server o transparent, aplicar `vtp version 2` y volver a client antes de activar el trunk hacia el servidor VTP. Si un modelo de Packet Tracer no propaga VTP, crear VLAN 10-80 manualmente como respaldo en ese switch.
+
+## Gestion Remota Por Telnet
+
+Telnet se documenta solo para evidencia de laboratorio. Debe probarse desde VLAN 70 GestionTI y debe fallar desde VLAN 30 Invitados por la ACL de aislamiento.
+
+Rango recomendado de gestion:
+
+- Gateway VLAN 70: `172.23.45.129`.
+- DHCP: `172.23.45.130`.
+- WLC: `172.23.45.131`.
+- Switches: `172.23.45.132` a `172.23.45.152`.
+- DHCP dinamico GestionTI: iniciar en `172.23.45.154`.
+
+Plantilla IOS para switches:
+
+```ios
+enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+interface vlan 70
+ description MGMT_GestionTI
+ ip address IP_MGMT_UNICA 255.255.255.192
+ no shutdown
+exit
+ip default-gateway 172.23.45.129
+line vty 0 15
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory
+```
+
+Plantilla IOS para router:
+
+```ios
+enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+line vty 0 4
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
 end
 write memory
 ```

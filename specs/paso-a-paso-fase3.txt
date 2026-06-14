@@ -15,7 +15,9 @@ Convencion:
 - Si un modelo Switch-PT viejo marca error en un comando de STP o trunk
   avanzado, ignoren solo ese comando y sigan con el resto.
 - Para VTP usen siempre el mismo dominio y password en todos los switches:
-  dominio OMI-REDES, password OMI2026, version 2.
+  dominio OMI-REDES, password OMI2026, version 2. En switches cliente,
+  apliquen primero "vtp version 2" y al final "vtp mode client"; si ya estan
+  en client, Packet Tracer puede mostrar "cannot modify version in VTP client mode".
 - No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son
   GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.
 
@@ -249,9 +251,9 @@ enable
 configure terminal
 hostname NOMBRE_DEL_SWITCH
 vtp domain OMI-REDES
-vtp mode client
 vtp version 2
 vtp password OMI2026
+vtp mode client
 end
 write memory
 
@@ -273,6 +275,24 @@ Resultado esperado:
   quede activo en el Paso 4.
 
 Nota:
+Si el switch ya quedo como cliente y aparece el error:
+
+cannot modify version in VTP client mode
+
+usen esta correccion en ese switch antes de activar el trunk hacia el servidor
+VTP:
+
+enable
+configure terminal
+vtp mode server
+vtp version 2
+vtp mode client
+end
+write memory
+
+Despues verifiquen otra vez con "show vtp status". El error pasa porque IOS no
+deja cambiar la version mientras el switch esta en modo cliente.
+
 Si un Switch-PT viejo no acepta "vtp password" o "vtp version 2", apliquen
 por lo menos "vtp domain OMI-REDES" y "vtp mode client". Si VTP no propaga
 en ese modelo, usen el bloque manual de VLANs del Paso 2 como respaldo solo
@@ -1252,6 +1272,134 @@ Debe recibir: 172.23.45.200-222
 
 
 ============================================================
+PASO 10.5 - HABILITAR TELNET DE ADMINISTRACION
+============================================================
+
+Objetivo:
+Permitir administracion remota por Telnet desde VLAN 70 GestionTI durante la
+practica de Packet Tracer. Telnet envia credenciales en texto claro; en una red
+real se debe preferir SSH, pero aqui se documenta porque puede ser requisito de
+la entrega.
+
+Credenciales de laboratorio:
+- Password VTY/Telnet: OMItelnet2026
+- Enable secret: OMIenable2026
+
+IPs de gestion reservadas:
+- SW-1ERA.1-42: 172.23.45.132
+- SW-1ERA.1-43: 172.23.45.133
+- SW-1ERA.1-40: 172.23.45.134
+- SW-2ERA.1-44: 172.23.45.135
+- SW-2ERA.1-42: 172.23.45.136
+- SW-3ERA.1-44: 172.23.45.137
+- SW-3ERA.1-42: 172.23.45.138
+- SW-1ERC.1-44: 172.23.45.139
+- SW-1ERC.1-42: 172.23.45.140
+- SW-1ERC.1-40: 172.23.45.141
+- SW-4ERC.1-44: 172.23.45.142
+- SW-4ERC.1-42: 172.23.45.143
+- SW-1ERB.1-44: 172.23.45.144
+- SW-1ERB.1-42: 172.23.45.145
+- SW-2ERB.1-44: 172.23.45.146
+- SW-2ERB.1-42: 172.23.45.147
+- SW-2ERB.1-40: 172.23.45.148
+- SW-2ERBA.1-44: 172.23.45.149
+- SW-2ERBA.1-42: 172.23.45.150
+- SW-2ERBL.1-44: 172.23.45.151
+- SW-2ERBL.1-42: 172.23.45.152
+
+10.5.1 En el router RT-1ERA.1-45
+
+Abrir RT-1ERA.1-45 > CLI > pegar:
+
+enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+line vty 0 4
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory
+
+
+10.5.2 En SW-1ERA.1-42
+
+Abrir SW-1ERA.1-42 > CLI > pegar:
+
+enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+interface vlan 70
+ description MGMT_GestionTI
+ ip address 172.23.45.132 255.255.255.192
+ no shutdown
+exit
+ip default-gateway 172.23.45.129
+line vty 0 15
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory
+
+
+10.5.3 En cada switch de acceso
+
+Usar la IP unica de la tabla anterior. Cambien IP_MGMT_UNICA por la IP que
+corresponde al switch:
+
+enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+interface vlan 70
+ description MGMT_GestionTI
+ ip address IP_MGMT_UNICA 255.255.255.192
+ no shutdown
+exit
+ip default-gateway 172.23.45.129
+line vty 0 15
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory
+
+Verificacion desde un host en VLAN 70 GestionTI o desde DHCP-1ERA.1-39:
+
+telnet 172.23.45.132
+
+Cuando pida Password, escribir:
+
+OMItelnet2026
+
+Despues entrar a modo privilegiado:
+
+enable
+
+Cuando pida Password, escribir:
+
+OMIenable2026
+
+Comandos de evidencia:
+
+show ip interface brief
+show running-config | section line vty
+
+Resultado esperado:
+- Telnet abre sesion desde VLAN 70 hacia SW-1ERA.1-42 y switches con IP de
+  gestion configurada.
+- "show ip interface brief" muestra Vlan70 up/up o up en los switches.
+- Desde Invitados-Wifi, Telnet hacia 172.23.45.132 debe fallar por la ACL.
+
+
+============================================================
 PASO 11 - PRUEBAS OBLIGATORIAS
 ============================================================
 
@@ -1288,11 +1436,13 @@ Esperado:
 
 En cada switch:
 
+show ip interface brief
 show interfaces trunk
 show vlan brief
 show vtp status
 
 Esperado:
+- Vlan70 aparece up/up o up con la IP de gestion asignada.
 - Uplink hacia distribucion aparece como trunk.
 - Puertos de usuario aparecen en su VLAN correcta.
 - VTP aparece como Client, dominio OMI-REDES, version 2.
@@ -1340,6 +1490,26 @@ Esperado:
 - Ping a 172.23.45.193 falla.
 
 Ese fallo es correcto: demuestra aislamiento de Invitados.
+
+
+11.6 Prueba de Telnet
+
+Desde un host de GestionTI o desde DHCP-1ERA.1-39:
+
+telnet 172.23.45.132
+
+Esperado:
+- Pide password.
+- Acepta OMItelnet2026.
+- Permite entrar a enable con OMIenable2026.
+
+Desde un host Invitados:
+
+telnet 172.23.45.132
+
+Esperado:
+- Falla la conexion o no abre sesion. Esto confirma que Invitados no administra
+  equipos internos.
 
 
 ============================================================
@@ -1472,6 +1642,8 @@ CHECKLIST FINAL DE CIERRE
 [ ] Clientes autorizados reciben IP valida por DHCP.
 [ ] Primaria, Secundaria, Preparatoria y Jueces hacen ping a 172.23.45.194.
 [ ] Invitados NO puede hacer ping a 172.23.45.194.
+[ ] Telnet funciona desde VLAN 70 GestionTI hacia equipos de red.
+[ ] Telnet falla desde Invitados hacia equipos de red internos.
 [ ] Configuraciones finales exportadas a .txt.
 
 Cuando todos los puntos esten marcados, la Fase 3 queda lista para documentar

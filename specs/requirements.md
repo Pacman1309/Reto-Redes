@@ -37,6 +37,7 @@ La Fase 3 se enfoca en configuracion logica, segmentacion, servicios, seguridad 
 - RF-06: La VLAN de Invitados debe quedar aislada de la red interna y del segmento de Jueces.
 - RF-07: Los segmentos de competidores autorizados deben alcanzar el Servidor Local de evaluacion.
 - RF-08: La red de Prensa e Invitados debe tener salida controlada a Internet cuando el escenario de Packet Tracer incluya ese enlace.
+- RF-09: Los equipos de red deben permitir administracion por Telnet desde VLAN 70 GestionTI para evidencia de laboratorio, y esa administracion debe fallar desde VLAN 30 Invitados.
 
 ## Requisitos No Funcionales
 
@@ -45,6 +46,7 @@ La Fase 3 se enfoca en configuracion logica, segmentacion, servicios, seguridad 
 - RNF-03: Conservar claridad academica: nombres de VLAN, descripciones de interfaces y trazabilidad por edificio.
 - RNF-04: No cargar el XML completo en herramientas de contexto; auditar por bloques de configuracion, VLAN, IP y dispositivos.
 - RNF-05: Mantener compatibilidad con Cisco Packet Tracer 9.0 y comandos IOS soportados por ISR4331, Catalyst 3650 y 2960.
+- RNF-06: Telnet se acepta solo como requisito de practica Packet Tracer; en una red real debe preferirse SSH porque Telnet envia credenciales en texto claro.
 
 ## Auditoria Inicial Del XML
 
@@ -57,4 +59,5 @@ Archivo auditado: `data/output/Reto-Redes.xml`.
 - PASS parcial: existen pools DHCP para VLAN 10,20,30,40,50,60,70,80 (`lineas 85189-85314`).
 - FAIL pendiente: no se encontro ACL aplicada para aislar Invitados de Jueces/red interna.
 - FAIL pendiente: la mayoria de switches de acceso siguen con VLAN 1 por defecto y sin trunks/puertos de acceso documentados.
+- FAIL pendiente: hay lineas VTY en equipos de red, pero sin password Telnet ni `transport input telnet` documentado.
 - FAIL pendiente: no hay evidencia exportada de pruebas ping 100% exitosas hacia el Servidor Local.

@@ -15,6 +15,7 @@
 | AC-09 | Cableado entre closets con fibra y patch panels | Vista fisica Packet Tracer con enlaces y labels | PASS parcial, requiere revision visual final |
 | AC-10 | Documentacion TIA/EIA-606-B | Hostnames, descripciones y etiquetas fisicas | FAIL pendiente |
 | AC-11 | Export de configs individuales | Archivos `.txt` por router/switch | FAIL pendiente |
+| AC-12 | Telnet administrativo desde GestionTI | `telnet 172.23.45.132` desde VLAN 70 funciona; desde Invitados falla | FAIL pendiente |
 
 ## Comandos De Verificacion
 
@@ -23,6 +24,7 @@ Ejecutar en `RT-1ERA.1-45`:
 ```ios
 show ip interface brief
 show running-config
+show running-config | section line vty
 show access-lists
 show ip route
 ```
@@ -30,16 +32,20 @@ show ip route
 Ejecutar en `SW-1ERA.1-42`:
 
 ```ios
+show ip interface brief
 show vlan brief
 show interfaces trunk
+show running-config | section line vty
 show running-config
 ```
 
 Ejecutar en cada switch de acceso:
 
 ```ios
+show ip interface brief
 show vlan brief
 show interfaces trunk
+show running-config | section line vty
 show running-config
 ```
 
@@ -49,6 +55,7 @@ Ejecutar desde hosts finales:
 ipconfig
 ping 172.23.45.193
 ping IP_SERVIDOR_LOCAL
+telnet 172.23.45.132
 ```
 
 ## Matriz De Pruebas Minima
@@ -64,6 +71,8 @@ ping IP_SERVIDOR_LOCAL
 | Host Invitados | 30 | Servidor Local | FAIL esperado |
 | Host Invitados | 30 | `172.23.45.193` | FAIL esperado |
 | Host Invitados | 30 | Internet | PASS si existe salida |
+| Host GestionTI | 70 | Telnet a `172.23.45.132` | PASS |
+| Host Invitados | 30 | Telnet a `172.23.45.132` | FAIL esperado |
 
 ## Condicion De Cierre
 
@@ -74,5 +83,6 @@ La Fase 3 se considera aceptada cuando:
 - Los segmentos autorizados alcanzan el Servidor Local.
 - Invitados queda aislado de la red interna.
 - Los trunks inter-closet transportan las VLAN requeridas.
+- Telnet administrativo funciona desde GestionTI y queda bloqueado desde Invitados.
 - Los archivos de configuracion final se exportan por dispositivo.
 - La evidencia de comandos y pings queda lista para el reporte de Fase 4.

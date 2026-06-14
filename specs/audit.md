@@ -3,7 +3,9 @@
 Archivo auditado: `data/output/Reto-Redes-actual.xml`  
 Archivo anterior de referencia: `data/output/Reto-Redes.xml`  
 Fecha de auditoria: 2026-06-13  
-Metodo: parseo XML estructurado con foco en `DEVICE`, `RUNNINGCONFIG`, `VLANS`, `VTP`, `DHCP_SERVERS`, endpoints, WLC/CAPWAP, WLANs y `LINK`.
+Revision complementaria: `data/output/...Fase 3 en proceso.xml`, 2026-06-14
+
+Metodo: parseo XML estructurado con foco en `DEVICE`, `RUNNINGCONFIG`, `VLANS`, `VTP`, `VTY/Telnet`, `DHCP_SERVERS`, endpoints, WLC/CAPWAP, WLANs y `LINK`.
 
 ## Resumen Ejecutivo
 
@@ -23,10 +25,11 @@ Estado general estimado:
 | Switching de distribucion/acceso | 25% | Falta VTP, propagacion VLAN/trunks |
 | Wireless con WLC/LWAP | 45% | WLC avanzado, APs no asociados |
 | Seguridad por ACL | 0% | Pendiente |
+| Administracion Telnet | 0% | VTY detectado, sin password ni transporte Telnet |
 | Pruebas de conectividad | 0% | Pendiente |
 | Export de configuraciones | 0% | Pendiente |
 
-Conclusion: vas mejor que en el primer XML. El cambio a WLC/LWAP es correcto para una red de alta densidad, pero todavia falta completar VTP, CAPWAP, trunks/access VLANs, DHCP relay, ACL de Invitados y pruebas ping. La maqueta fisica ya esta bastante armada; lo que falta es cerrar la operacion logica.
+Conclusion: vas mejor que en el primer XML. El cambio a WLC/LWAP es correcto para una red de alta densidad, pero todavia falta completar VTP, CAPWAP, trunks/access VLANs, DHCP relay, Telnet de administracion, ACL de Invitados y pruebas ping. La maqueta fisica ya esta bastante armada; lo que falta es cerrar la operacion logica.
 
 ## Cambios Detectados Frente Al XML Anterior
 
@@ -123,6 +126,7 @@ Problemas:
 - No hay trunks configurados desde `SW-1ERA.1-42` hacia el backbone o closets.
 - No hay evidencia de propagacion de VLANs a `SW-1ERA.1-43`.
 - No hay SVIs de administracion ni gateway de management en los switches.
+- Las lineas VTY aparecen con `login`, pero sin password ni `transport input telnet`; asi Telnet no queda utilizable.
 - No hay evidencia de STP tuning, root bridge, portfast masivo ni BPDU guard.
 
 Accion recomendada:
@@ -131,7 +135,7 @@ Accion recomendada:
 - Permitir VLAN 10,20,30,40,50,60,70,80 en ese enlace.
 - Configurar `SW-1ERA.1-42` como VTP server: dominio `OMI-REDES`, version 2 y password `OMI2026`.
 - Mantener `Gi1/0/2` del WLC en VLAN 70 si Packet Tracer esta trabajando con WLC en modo centralizado basico.
-- Configurar administracion del switch en VLAN 70 si la rubrica pide gestion remota.
+- Configurar administracion del switch en VLAN 70 y habilitar Telnet de laboratorio si la rubrica pide gestion remota.
 
 ## WLC Y Wireless
 
@@ -240,9 +244,30 @@ Accion recomendada:
 
 - Usar `SW-1ERA.1-42` como VTP server.
 - Configurar dominio `OMI-REDES`, version 2 y password `OMI2026`.
-- Configurar todos los switches restantes como VTP client con el mismo dominio, version y password.
+- Configurar todos los switches restantes como VTP client con el mismo dominio, version y password. En clientes, aplicar primero `vtp version 2` y al final `vtp mode client` para evitar `cannot modify version in VTP client mode`.
 - Crear VLAN 10,20,30,40,50,60,70,80 solo en el servidor VTP.
 - Verificar con `show vtp status`, `show vlan brief` y `show interfaces trunk`.
+
+### Telnet Y VTY
+
+Evidencia:
+
+- Se detectan bloques `line vty` en router y switches.
+- Las lineas VTY tienen `login`, pero no password visible ni `transport input telnet`.
+- No se detectan SVIs de administracion VLAN 70 con IPs de gestion en switches de acceso.
+
+Problemas:
+
+- Con `login` sin password configurado, Telnet no queda listo para uso practico.
+- Sin `interface vlan 70` con IP unica y `ip default-gateway 172.23.45.129`, los switches capa 2 no pueden recibir Telnet desde GestionTI.
+- Si Invitados puede abrir Telnet hacia equipos internos, la ACL de aislamiento estaria incompleta.
+
+Accion recomendada:
+
+- Usar `enable secret OMIenable2026`.
+- Configurar VTY con `password OMItelnet2026`, `login` y `transport input telnet`.
+- Asignar `172.23.45.132-.152/26` a SVIs VLAN 70 de switches y reservar DHCP dinamico desde `172.23.45.154`.
+- Probar Telnet desde VLAN 70 y comprobar que falla desde VLAN 30 Invitados.
 
 ### Switching De Acceso Y Backbone
 
@@ -426,6 +451,7 @@ Nota: si en la simulacion no hay Internet real, el `permit any` sirve solo para 
 | APs unidos al WLC | FAIL | `APS` vacio y `PRIMARY_AC 0.0.0.0` |
 | WLAN Jueces VLAN 80 | FAIL | No detectada |
 | Invitados aislados por ACL | FAIL | No hay ACL |
+| Telnet desde GestionTI | FAIL | VTY sin password/transporte Telnet y sin SVIs de gestion |
 | Clientes con IP valida | FAIL | APIPA/sin IP |
 | Pings al Servidor Local | Pendiente | No demostrable desde XML |
 | Export de configuraciones | Pendiente | Falta generar configs por equipo |
@@ -443,11 +469,12 @@ Nota: si en la simulacion no hay Internet real, el `permit any` sirve solo para 
 9. Asignar IP estatica al Servidor Local `ING-04SRV-01`, impresoras y DNS si aplica.
 10. Aplicar ACL de Invitados en la subinterfaz VLAN 30.
 11. Renovar DHCP en endpoints hasta eliminar APIPA.
-12. Ejecutar pruebas ping por segmento y documentar resultados PASS/FAIL.
-13. Exportar configuraciones finales de router, switches, WLC y dispositivos clave.
+12. Habilitar Telnet de administracion desde VLAN 70 y verificar bloqueo desde Invitados.
+13. Ejecutar pruebas ping por segmento y documentar resultados PASS/FAIL.
+14. Exportar configuraciones finales de router, switches, WLC y dispositivos clave.
 
 ## Veredicto Actual
 
-El avance mas importante del archivo actual es la migracion a WLC/LWAP. Eso mejora el diseno para alta densidad y se alinea mejor con Primaria, Secundaria, Prensa, Entrenadores, Invitados y Jueces. Pero todavia no se puede considerar funcional porque VTP no tiene dominio/configuracion util, los APs no estan unidos al controlador, las VLAN no viajan por el backbone, DHCP relay apunta al gateway equivocado y no existe ACL de Invitados.
+El avance mas importante del archivo actual es la migracion a WLC/LWAP. Eso mejora el diseno para alta densidad y se alinea mejor con Primaria, Secundaria, Prensa, Entrenadores, Invitados y Jueces. Pero todavia no se puede considerar funcional porque VTP no tiene dominio/configuracion util, los APs no estan unidos al controlador, las VLAN no viajan por el backbone, DHCP relay apunta al gateway equivocado, Telnet no esta listo en VTY y no existe ACL de Invitados.
 
-Prioridad inmediata: primero hacer que el core entregue DHCP correctamente; despues configurar VTP y levantar trunks/access VLANs; despues registrar APs al WLC; finalmente aplicar seguridad y correr pings. Ese orden reduce ruido al depurar en Packet Tracer.
+Prioridad inmediata: primero hacer que el core entregue DHCP correctamente; despues configurar VTP y levantar trunks/access VLANs; despues registrar APs al WLC; finalmente aplicar Telnet/seguridad y correr pings. Ese orden reduce ruido al depurar en Packet Tracer.

@@ -287,6 +287,7 @@
 <a href="#paso-8-configurar-wlc-wlc-1era-1-35">PASO 8 - Configurar Wlc Wlc-1Era.1-35</a>
 <a href="#paso-9-configurar-los-16-lwap">PASO 9 - Configurar Los 16 Lwap</a>
 <a href="#paso-10-configurar-clientes-finales">PASO 10 - Configurar Clientes Finales</a>
+<a href="#paso-10-5-habilitar-telnet-de-administracion">PASO 10.5 - Habilitar Telnet de Administracion</a>
 <a href="#paso-11-pruebas-obligatorias">PASO 11 - Pruebas Obligatorias</a>
 <a href="#paso-12-opcional-salida-a-red-institucional-internet-simulada">PASO 12 - Opcional: Salida A Red Institucional / Internet Simulada</a>
 <a href="#paso-13-exportar-configuraciones-finales">PASO 13 - Exportar Configuraciones Finales</a>
@@ -318,7 +319,7 @@
 <li>Al final de cada bloque se incluye "write memory" para guardar.</li>
 <li>Si Packet Tracer pregunta "Continue with configuration dialog?", escriban no.</li>
 <li>Si un modelo Switch-PT viejo marca error en un comando de STP o trunk avanzado, ignoren solo ese comando y sigan con el resto.</li>
-<li>Para VTP usen siempre el mismo dominio y password en todos los switches: dominio OMI-REDES, password OMI2026, version 2.</li>
+<li>Para VTP usen siempre el mismo dominio y password en todos los switches: dominio OMI-REDES, password OMI2026, version 2. En switches cliente, apliquen primero "vtp version 2" y al final "vtp mode client"; si ya estan en client, Packet Tracer puede mostrar "cannot modify version in VTP client mode".</li>
 <li>No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.</li>
             </ul>
           </div>
@@ -566,9 +567,9 @@ show vtp status</code></pre></div>
 configure terminal
 hostname NOMBRE_DEL_SWITCH
 vtp domain OMI-REDES
-vtp mode client
 vtp version 2
 vtp password OMI2026
+vtp mode client
 end
 write memory</code></pre></div>
 <h3>Ejemplo</h3>
@@ -586,6 +587,17 @@ write memory</code></pre></div>
 <li>Las VLAN 10-80 apareceran despues de que el trunk hacia el servidor VTP quede activo en el Paso 4.</li>
 </ul>
 <h3>Nota</h3>
+<p>Si el switch ya quedo como cliente y aparece el error:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>cannot modify version in VTP client mode</code></pre></div>
+<p>usen esta correccion en ese switch antes de activar el trunk hacia el servidor VTP:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+vtp mode server
+vtp version 2
+vtp mode client
+end
+write memory</code></pre></div>
+<p>Despues verifiquen otra vez con "show vtp status". El error pasa porque IOS no deja cambiar la version mientras el switch esta en modo cliente.</p>
 <p>Si un Switch-PT viejo no acepta "vtp password" o "vtp version 2", apliquen por lo menos "vtp domain OMI-REDES" y "vtp mode client". Si VTP no propaga en ese modelo, usen el bloque manual de VLANs del Paso 2 como respaldo solo en ese switch.</p>
   </div>
 </section>
@@ -1559,6 +1571,116 @@ write memory</code></pre></div>
 </div>
   </div>
 </section>
+<section class="guide-section" id="paso-10-5-habilitar-telnet-de-administracion">
+  <div class="section-head">
+    <label class="done"><input type="checkbox" aria-label="Marcar PASO 10.5 - Habilitar Telnet De Administracion como terminado"></label>
+    <div>
+      <span class="section-pill">Paso 10.5</span>
+      <h2>Habilitar Telnet De Administracion</h2>
+    </div>
+  </div>
+  <div class="section-body">
+<h3>Objetivo</h3>
+<p>Permitir administracion remota por Telnet desde VLAN 70 GestionTI durante la practica de Packet Tracer. Telnet envia credenciales en texto claro; en una red real se debe preferir SSH, pero aqui se documenta porque puede ser requisito de la entrega.</p>
+<h3>Credenciales de laboratorio</h3>
+<ul>
+<li>Password VTY/Telnet: OMItelnet2026</li>
+<li>Enable secret: OMIenable2026</li>
+</ul>
+<h3>IPs de gestion reservadas</h3>
+<div class="line-list">
+<span>SW-1ERA.1-42: 172.23.45.132</span>
+<span>SW-1ERA.1-43: 172.23.45.133</span>
+<span>SW-1ERA.1-40: 172.23.45.134</span>
+<span>SW-2ERA.1-44: 172.23.45.135</span>
+<span>SW-2ERA.1-42: 172.23.45.136</span>
+<span>SW-3ERA.1-44: 172.23.45.137</span>
+<span>SW-3ERA.1-42: 172.23.45.138</span>
+<span>SW-1ERC.1-44: 172.23.45.139</span>
+<span>SW-1ERC.1-42: 172.23.45.140</span>
+<span>SW-1ERC.1-40: 172.23.45.141</span>
+<span>SW-4ERC.1-44: 172.23.45.142</span>
+<span>SW-4ERC.1-42: 172.23.45.143</span>
+<span>SW-1ERB.1-44: 172.23.45.144</span>
+<span>SW-1ERB.1-42: 172.23.45.145</span>
+<span>SW-2ERB.1-44: 172.23.45.146</span>
+<span>SW-2ERB.1-42: 172.23.45.147</span>
+<span>SW-2ERB.1-40: 172.23.45.148</span>
+<span>SW-2ERBA.1-44: 172.23.45.149</span>
+<span>SW-2ERBA.1-42: 172.23.45.150</span>
+<span>SW-2ERBL.1-44: 172.23.45.151</span>
+<span>SW-2ERBL.1-42: 172.23.45.152</span>
+</div>
+<h3>10.5.1 En el router RT-1ERA.1-45</h3>
+<p>Abrir RT-1ERA.1-45 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+line vty 0 4
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory</code></pre></div>
+<h3>10.5.2 En SW-1ERA.1-42</h3>
+<p>Abrir SW-1ERA.1-42 &gt; CLI &gt; pegar:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+interface vlan 70
+ description MGMT_GestionTI
+ ip address 172.23.45.132 255.255.255.192
+ no shutdown
+exit
+ip default-gateway 172.23.45.129
+line vty 0 15
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory</code></pre></div>
+<h3>10.5.3 En cada switch de acceso</h3>
+<p>Usar la IP unica de la tabla anterior. Cambien IP_MGMT_UNICA por la IP que corresponde al switch:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+service password-encryption
+enable secret OMIenable2026
+interface vlan 70
+ description MGMT_GestionTI
+ ip address IP_MGMT_UNICA 255.255.255.192
+ no shutdown
+exit
+ip default-gateway 172.23.45.129
+line vty 0 15
+ password OMItelnet2026
+ login
+ transport input telnet
+ exec-timeout 10 0
+end
+write memory</code></pre></div>
+<h3>Verificacion desde un host en VLAN 70 GestionTI o desde DHCP-1ERA.1-39</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>telnet 172.23.45.132</code></pre></div>
+<p>Cuando pida Password, escribir:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>OMItelnet2026</code></pre></div>
+<p>Despues entrar a modo privilegiado:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable</code></pre></div>
+<p>Cuando pida Password, escribir:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>OMIenable2026</code></pre></div>
+<h3>Comandos de evidencia</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show ip interface brief
+show running-config | section line vty</code></pre></div>
+<h3>Resultado esperado</h3>
+<ul>
+<li>Telnet abre sesion desde VLAN 70 hacia SW-1ERA.1-42 y switches con IP de gestion configurada.</li>
+<li>"show ip interface brief" muestra Vlan70 up/up o up en los switches.</li>
+<li>Desde Invitados-Wifi, Telnet hacia 172.23.45.132 debe fallar por la ACL.</li>
+</ul>
+  </div>
+</section>
 <section class="guide-section" id="paso-11-pruebas-obligatorias">
   <div class="section-head">
     <label class="done"><input type="checkbox" aria-label="Marcar PASO 11 - Pruebas Obligatorias como terminado"></label>
@@ -1593,11 +1715,13 @@ show running-config</code></pre></div>
 </ul>
 <h3>11.3 Prueba desde switches de acceso</h3>
 <h3>En cada switch</h3>
-<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show interfaces trunk
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show ip interface brief
+show interfaces trunk
 show vlan brief
 show vtp status</code></pre></div>
 <h3>Esperado</h3>
 <ul>
+<li>Vlan70 aparece up/up o up con la IP de gestion asignada.</li>
 <li>Uplink hacia distribucion aparece como trunk.</li>
 <li>Puertos de usuario aparecen en su VLAN correcta.</li>
 <li>VTP aparece como Client, dominio OMI-REDES, version 2.</li>
@@ -1635,6 +1759,21 @@ ping 172.23.45.193</code></pre></div>
 <div class="kv-grid">
 <div><dt>Ese fallo es correcto</dt><dd>demuestra aislamiento de Invitados.</dd></div>
 </div>
+<h3>11.6 Prueba de Telnet</h3>
+<h3>Desde un host de GestionTI o desde DHCP-1ERA.1-39</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>telnet 172.23.45.132</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Pide password.</li>
+<li>Acepta OMItelnet2026.</li>
+<li>Permite entrar a enable con OMIenable2026.</li>
+</ul>
+<h3>Desde un host Invitados</h3>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>telnet 172.23.45.132</code></pre></div>
+<h3>Esperado</h3>
+<ul>
+<li>Falla la conexion o no abre sesion. Esto confirma que Invitados no administra equipos internos.</li>
+</ul>
   </div>
 </section>
 <section class="guide-section" id="paso-12-opcional-salida-a-red-institucional-internet-simulada">
@@ -1768,6 +1907,8 @@ write memory</code></pre></div>
 <label class="check"><input type="checkbox"> <span>Clientes autorizados reciben IP valida por DHCP.</span></label>
 <label class="check"><input type="checkbox"> <span>Primaria, Secundaria, Preparatoria y Jueces hacen ping a 172.23.45.194.</span></label>
 <label class="check"><input type="checkbox"> <span>Invitados NO puede hacer ping a 172.23.45.194.</span></label>
+<label class="check"><input type="checkbox"> <span>Telnet funciona desde VLAN 70 GestionTI hacia equipos de red.</span></label>
+<label class="check"><input type="checkbox"> <span>Telnet falla desde Invitados hacia equipos de red internos.</span></label>
 <label class="check"><input type="checkbox"> <span>Configuraciones finales exportadas a .txt.</span></label>
 <p>Cuando todos los puntos esten marcados, la Fase 3 queda lista para documentar en el reporte final.</p>
   </div>
