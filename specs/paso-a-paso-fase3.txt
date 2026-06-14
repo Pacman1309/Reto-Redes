@@ -811,6 +811,24 @@ los puertos donde realmente llegan los APs, por ejemplo:
 
 interface range FastEthernet0/3 - 6
 
+Nota si siguen problemas wireless:
+El video de referencia usa puertos de AP en trunk con native VLAN de gestion.
+Empiecen con access VLAN 70 para que el AP descubra el WLC. Si despues de
+crear las interfaces web del WLC los clientes siguen recibiendo 172.23.45.x,
+prueben SOLO en un AP piloto:
+
+enable
+configure terminal
+interface FastEthernet0/X
+ description LWAP_TRUNK_PRUEBA
+ switchport mode trunk
+ switchport trunk native vlan 70
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ spanning-tree portfast trunk
+ no shutdown
+end
+write memory
+
 
 5.2 Puertos cableados de Preparatoria - VLAN 40
 
@@ -1098,6 +1116,114 @@ Mask: 255.255.255.224
 Gateway: 172.23.45.193
 
 
+8.2A Configuracion por navegador como en el video
+
+Si en la pestana Config del WLC solo aparecen:
+Settings, Wireless LANs, AP Groups, DHCP, GigabitEthernet0 y Management,
+entonces NO se configuran las interfaces dinamicas desde esa pantalla. Hay que
+entrar al WLC por navegador.
+
+1. Usar una PC de GestionTI/VLAN 70.
+   Debe tener IP en 172.23.45.132-190/26 y gateway 172.23.45.129.
+
+2. Probar conectividad:
+
+ping 172.23.45.131
+
+3. Abrir navegador desde esa PC:
+
+http://172.23.45.131
+
+4. Si aparece asistente inicial, crear:
+
+Usuario: admin
+Password: Cisco123
+
+5. Si el WLC reinicia o cambia a acceso seguro, entrar por:
+
+https://172.23.45.131
+
+6. Ir a:
+
+Controller > Interfaces
+
+Crear estas interfaces. En DHCP Server poner 172.23.45.130 porque en esta
+topologia el DHCP real esta en DHCP-1ERA.1-39, no en el router.
+
+Nombre: vlan10_primaria
+VLAN ID: 10
+IP: 172.23.40.2
+Mask: 255.255.254.0
+Gateway: 172.23.40.1
+DHCP Server: 172.23.45.130
+
+Nombre: vlan20_secundaria
+VLAN ID: 20
+IP: 172.23.42.2
+Mask: 255.255.255.0
+Gateway: 172.23.42.1
+DHCP Server: 172.23.45.130
+
+Nombre: vlan30_invitados
+VLAN ID: 30
+IP: 172.23.43.2
+Mask: 255.255.255.0
+Gateway: 172.23.43.1
+DHCP Server: 172.23.45.130
+
+Nombre: vlan40_preparatoria
+VLAN ID: 40
+IP: 172.23.44.2
+Mask: 255.255.255.0
+Gateway: 172.23.44.1
+DHCP Server: 172.23.45.130
+
+Nombre: vlan50_entrenadores
+VLAN ID: 50
+IP: 172.23.45.2
+Mask: 255.255.255.192
+Gateway: 172.23.45.1
+DHCP Server: 172.23.45.130
+
+Nombre: vlan60_prensa
+VLAN ID: 60
+IP: 172.23.45.66
+Mask: 255.255.255.192
+Gateway: 172.23.45.65
+DHCP Server: 172.23.45.130
+
+Nombre: vlan80_jueces
+VLAN ID: 80
+IP: 172.23.45.199
+Mask: 255.255.255.224
+Gateway: 172.23.45.193
+DHCP Server: 172.23.45.130
+
+7. Ir a:
+
+WLANs
+
+Editar cada SSID y asignar su Interface:
+
+Primaria-Wifi -> vlan10_primaria
+Secundaria-Wifi -> vlan20_secundaria
+Invitados-Wifi -> vlan30_invitados
+Preparatoria-Wifi -> vlan40_preparatoria
+Entrenadores-Wifi -> vlan50_entrenadores
+Prensa-Wifi -> vlan60_prensa
+Jueces-Wifi -> vlan80_jueces
+
+8. Guardar, habilitar cada WLAN y confirmar que los AP aparecen Connected en:
+
+Wireless > Access Points
+
+Si los AP aparecen Not Connected, revisar:
+- Que reciban IP por DHCP en VLAN 70.
+- Que puedan llegar a 172.23.45.131.
+- Que el puerto del AP este en access VLAN 70 o, si se usa el metodo del video,
+  trunk con native VLAN 70.
+
+
 8.3 WLANs / SSIDs
 
 Abrir WLC-1ERA.1-35 > Config > Wireless LANs.
@@ -1289,6 +1415,14 @@ SSID: Jueces-Wifi
 Password: concurso123
 IP: DHCP
 Debe recibir: 172.23.45.200-222
+
+Si un cliente wireless se conecta pero recibe 172.23.45.x cuando no corresponde
+a su area, no es un problema de la laptop. Regresar al Paso 8.2A y revisar:
+- La interface asignada al SSID en WLANs.
+- El DHCP Server de la interface WLC debe ser 172.23.45.130.
+- El trunk WLC-SW-1ERA.1-42 debe permitir VLAN 10,20,30,40,50,60,70,80.
+- Probar un AP piloto en trunk native VLAN 70 si el AP sigue enviando clientes
+  por la VLAN de gestion.
 
 
 ============================================================

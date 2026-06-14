@@ -1099,9 +1099,22 @@ interface range FastEthernet0/1 - 24
  no shutdown
 end
 write memory</code></pre></div>
-<p>Si ese switch tambien tiene PCs cableadas, NO usen todo Fa0/1-24. Usen solo los puertos donde realmente llegan los APs, por ejemplo:</p>
-<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>interface range FastEthernet0/3 - 6</code></pre></div>
-<h3>5.2 Puertos cableados de Preparatoria - VLAN 40</h3>
+	<p>Si ese switch tambien tiene PCs cableadas, NO usen todo Fa0/1-24. Usen solo los puertos donde realmente llegan los APs, por ejemplo:</p>
+	<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>interface range FastEthernet0/3 - 6</code></pre></div>
+	<h3>Nota si siguen problemas wireless</h3>
+	<p>El video de referencia usa puertos de AP en trunk con native VLAN de gestion. Empiecen con access VLAN 70 para que el AP descubra el WLC. Si despues de crear las interfaces web del WLC los clientes siguen recibiendo 172.23.45.x, prueben SOLO en un AP piloto:</p>
+	<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
+configure terminal
+interface FastEthernet0/X
+ description LWAP_TRUNK_PRUEBA
+ switchport mode trunk
+ switchport trunk native vlan 70
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ spanning-tree portfast trunk
+ no shutdown
+end
+write memory</code></pre></div>
+	<h3>5.2 Puertos cableados de Preparatoria - VLAN 40</h3>
 <h3>Aplicar en los switches donde terminan PCs de laboratorio de Preparatoria</h3>
 <ul>
 <li>SW-1ERC.1-42</li>
@@ -1388,11 +1401,94 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Nombre</dt><dd>vlan80_jueces</dd></div>
 <div><dt>VLAN ID</dt><dd>80</dd></div>
-<div><dt>IP</dt><dd>172.23.45.199</dd></div>
-<div><dt>Mask</dt><dd>255.255.255.224</dd></div>
-<div><dt>Gateway</dt><dd>172.23.45.193</dd></div>
-</div>
-<h3>8.3 WLANs / SSIDs</h3>
+	<div><dt>IP</dt><dd>172.23.45.199</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.224</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.45.193</dd></div>
+	</div>
+	<h3>8.2A Configuracion por navegador como en el video</h3>
+	<p>Si en la pestana Config del WLC solo aparecen Settings, Wireless LANs, AP Groups, DHCP, GigabitEthernet0 y Management, entonces NO se configuran las interfaces dinamicas desde esa pantalla. Hay que entrar al WLC por navegador.</p>
+	<p class="numbered"><span>1.</span>Usar una PC de GestionTI/VLAN 70. Debe tener IP en 172.23.45.132-190/26 y gateway 172.23.45.129.</p>
+	<p class="numbered"><span>2.</span>Probar conectividad:</p>
+	<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>ping 172.23.45.131</code></pre></div>
+	<p class="numbered"><span>3.</span>Abrir navegador desde esa PC:</p>
+	<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>http://172.23.45.131</code></pre></div>
+	<p class="numbered"><span>4.</span>Si aparece asistente inicial, crear:</p>
+	<div class="kv-grid">
+	<div><dt>Usuario</dt><dd>admin</dd></div>
+	<div><dt>Password</dt><dd>Cisco123</dd></div>
+	</div>
+	<p class="numbered"><span>5.</span>Si el WLC reinicia o cambia a acceso seguro, entrar por:</p>
+	<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>https://172.23.45.131</code></pre></div>
+	<p class="numbered"><span>6.</span>Ir a Controller &gt; Interfaces. Crear estas interfaces. En DHCP Server poner 172.23.45.130 porque en esta topologia el DHCP real esta en DHCP-1ERA.1-39, no en el router.</p>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan10_primaria</dd></div>
+	<div><dt>VLAN ID</dt><dd>10</dd></div>
+	<div><dt>IP</dt><dd>172.23.40.2</dd></div>
+	<div><dt>Mask</dt><dd>255.255.254.0</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.40.1</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan20_secundaria</dd></div>
+	<div><dt>VLAN ID</dt><dd>20</dd></div>
+	<div><dt>IP</dt><dd>172.23.42.2</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.0</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.42.1</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan30_invitados</dd></div>
+	<div><dt>VLAN ID</dt><dd>30</dd></div>
+	<div><dt>IP</dt><dd>172.23.43.2</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.0</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.43.1</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan40_preparatoria</dd></div>
+	<div><dt>VLAN ID</dt><dd>40</dd></div>
+	<div><dt>IP</dt><dd>172.23.44.2</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.0</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.44.1</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan50_entrenadores</dd></div>
+	<div><dt>VLAN ID</dt><dd>50</dd></div>
+	<div><dt>IP</dt><dd>172.23.45.2</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.192</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.45.1</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan60_prensa</dd></div>
+	<div><dt>VLAN ID</dt><dd>60</dd></div>
+	<div><dt>IP</dt><dd>172.23.45.66</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.192</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.45.65</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<div class="kv-grid">
+	<div><dt>Nombre</dt><dd>vlan80_jueces</dd></div>
+	<div><dt>VLAN ID</dt><dd>80</dd></div>
+	<div><dt>IP</dt><dd>172.23.45.199</dd></div>
+	<div><dt>Mask</dt><dd>255.255.255.224</dd></div>
+	<div><dt>Gateway</dt><dd>172.23.45.193</dd></div>
+	<div><dt>DHCP Server</dt><dd>172.23.45.130</dd></div>
+	</div>
+	<p class="numbered"><span>7.</span>Ir a WLANs. Editar cada SSID y asignar su Interface:</p>
+	<div class="line-list">
+	<span>Primaria-Wifi -&gt; vlan10_primaria</span>
+	<span>Secundaria-Wifi -&gt; vlan20_secundaria</span>
+	<span>Invitados-Wifi -&gt; vlan30_invitados</span>
+	<span>Preparatoria-Wifi -&gt; vlan40_preparatoria</span>
+	<span>Entrenadores-Wifi -&gt; vlan50_entrenadores</span>
+	<span>Prensa-Wifi -&gt; vlan60_prensa</span>
+	<span>Jueces-Wifi -&gt; vlan80_jueces</span>
+	</div>
+	<p class="numbered"><span>8.</span>Guardar, habilitar cada WLAN y confirmar que los AP aparecen Connected en Wireless &gt; Access Points.</p>
+	<p>Si los AP aparecen Not Connected, revisar que reciban IP por DHCP en VLAN 70, que puedan llegar a 172.23.45.131 y que el puerto del AP este en access VLAN 70 o, si se usa el metodo del video, trunk con native VLAN 70.</p>
+	<h3>8.3 WLANs / SSIDs</h3>
 <p>Abrir WLC-1ERA.1-35 &gt; Config &gt; Wireless LANs.</p>
 <h3>Crear o corregir</h3>
 <div class="kv-grid">
@@ -1597,11 +1693,19 @@ write memory</code></pre></div>
 <h3>Jueces</h3>
 <div class="kv-grid">
 <div><dt>SSID</dt><dd>Jueces-Wifi</dd></div>
-<div><dt>Password</dt><dd>concurso123</dd></div>
-<div><dt>IP</dt><dd>DHCP</dd></div>
-<div><dt>Debe recibir</dt><dd>172.23.45.200-222</dd></div>
-</div>
-  </div>
+	<div><dt>Password</dt><dd>concurso123</dd></div>
+	<div><dt>IP</dt><dd>DHCP</dd></div>
+	<div><dt>Debe recibir</dt><dd>172.23.45.200-222</dd></div>
+	</div>
+	<h3>Si recibe una IP incorrecta</h3>
+	<p>Si un cliente wireless se conecta pero recibe 172.23.45.x cuando no corresponde a su area, no es un problema de la laptop. Regresar al Paso 8.2A y revisar:</p>
+	<ul>
+	<li>La interface asignada al SSID en WLANs.</li>
+	<li>El DHCP Server de la interface WLC debe ser 172.23.45.130.</li>
+	<li>El trunk WLC-SW-1ERA.1-42 debe permitir VLAN 10,20,30,40,50,60,70,80.</li>
+	<li>Probar un AP piloto en trunk native VLAN 70 si el AP sigue enviando clientes por la VLAN de gestion.</li>
+	</ul>
+	  </div>
 </section>
 <section class="guide-section" id="paso-10-5-habilitar-telnet-de-administracion">
   <div class="section-head">
