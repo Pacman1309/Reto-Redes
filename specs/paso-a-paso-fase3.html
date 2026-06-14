@@ -1193,7 +1193,7 @@ write memory</code></pre></div>
 <div><dt>IP Address</dt><dd>172.23.45.130</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.45.129</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 </div>
 <h3>6.2 Pools DHCP</h3>
 <p>Abrir DHCP-1ERA.1-39 &gt; Services &gt; DHCP.</p>
@@ -1206,7 +1206,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN10_Primaria</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.40.1</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.40.3</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.254.0</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>509</dd></div>
@@ -1214,7 +1214,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN20_Secundaria</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.42.1</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.42.3</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>253</dd></div>
@@ -1222,7 +1222,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN30_Invitados</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.43.1</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.43.3</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>253</dd></div>
@@ -1230,7 +1230,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN40_Preparatoria</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.44.1</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.44.3</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.0</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>253</dd></div>
@@ -1238,7 +1238,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN50_Entrenadores</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.45.1</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.45.3</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>61</dd></div>
@@ -1246,7 +1246,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN60_Prensa</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.45.65</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.45.67</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>61</dd></div>
@@ -1254,7 +1254,7 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN70_GestionTI</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.45.129</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.45.154</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.192</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>37</dd></div>
@@ -1262,11 +1262,24 @@ write memory</code></pre></div>
 <div class="kv-grid">
 <div><dt>Pool</dt><dd>VLAN80_Jueces</dd></div>
 <div><dt>Default Gateway</dt><dd>172.23.45.193</dd></div>
-<div><dt>DNS Server</dt><dd>0.0.0.0</dd></div>
+<div><dt>DNS Server</dt><dd>172.23.45.130</dd></div>
 <div><dt>Start IP Address</dt><dd>172.23.45.200</dd></div>
 <div><dt>Subnet Mask</dt><dd>255.255.255.224</dd></div>
 <div><dt>Maximum Number of Users</dt><dd>23</dd></div>
 </div>
+<h3>6.3 DNS local con un solo dominio</h3>
+<p>En el mismo servidor `DHCP-1ERA.1-39`, abrir Services &gt; DNS.</p>
+<ul>
+<li>DNS Service: On.</li>
+<li>Eliminar cualquier registro DNS existente que no sea necesario.</li>
+<li>Dejar un solo registro para el dominio de prueba.</li>
+</ul>
+<div class="kv-grid">
+<div><dt>Name</dt><dd>cisco.com</dd></div>
+<div><dt>Type</dt><dd>A Record</dd></div>
+<div><dt>Address</dt><dd>172.23.45.194</dd></div>
+</div>
+<p>Con esto, los clientes que reciban DNS `172.23.45.130` por DHCP podran resolver unicamente `cisco.com` hacia el servidor local `ING-04SRV-01`.</p>
 <h3>Notas</h3>
 <ul>
 <li>Se empieza en .3 en varias VLAN para reservar .1 como gateway y .2 para</li>
@@ -1966,7 +1979,7 @@ write memory</code></pre></div>
 <li>DNS Service: On</li>
 <li>Agregar registro:</li>
 </ul>
-<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>  Name: servidor-omi.local
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>  Name: cisco.com
   Address: 172.23.45.194</code></pre></div>
 <p>Si usan este DNS, pueden volver a DHCP-1ERA.1-39 y poner DNS Server: 10.10.10.10 en todos los pools.</p>
   </div>
