@@ -168,7 +168,6 @@ enable
 configure terminal
 hostname SW-AREA-ID
 vtp domain OMI-REDES
-vtp version 2
 vtp password OMI2026
 vtp mode client
 !
@@ -189,7 +188,7 @@ end
 write memory
 ```
 
-Nota VTP: en switches cliente, `vtp version 2` debe configurarse antes de `vtp mode client`. Si el equipo ya quedo en cliente y muestra `cannot modify version in VTP client mode`, cambiar temporalmente a server o transparent, aplicar `vtp version 2` y volver a client antes de activar el trunk hacia el servidor VTP. Si un modelo de Packet Tracer no propaga VTP, crear VLAN 10-80 manualmente como respaldo en ese switch.
+Nota VTP: en este Packet Tracer, los clientes pueden mostrar `VTP version running: 1` al pasar a `vtp mode client`, aunque antes de cambiar el modo se hubiera visto version 2. No se debe pelear esa version en el cliente. La version 2 se valida en `SW-1ERA.1-42` como servidor VTP; en clientes se valida dominio `OMI-REDES`, password, modo client y aprendizaje de VLAN 10-80 por trunk. Si un modelo de Packet Tracer no propaga VTP, crear VLAN 10-80 manualmente como respaldo en ese switch.
 
 ## Gestion Remota Por Telnet
 

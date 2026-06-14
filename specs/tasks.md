@@ -36,7 +36,8 @@ Leyenda: `[x]` terminado, `[~]` parcial, `[ ]` pendiente.
 ## Switches De Acceso
 
 - [ ] Nombrar switches por edificio/area siguiendo TIA/EIA-606-B.
-- [ ] Configurar VTP client con orden correcto: dominio, version 2, password y al final `vtp mode client`.
+- [ ] Configurar VTP client con dominio `OMI-REDES`, password `OMI2026` y `vtp mode client`.
+- [ ] Validar version 2 en el VTP server `SW-1ERA.1-42`; en clientes validar aprendizaje de VLAN 10-80 aunque Packet Tracer muestre version running 1.
 - [ ] Crear VLANs 10-80 manualmente solo como respaldo si un modelo no propaga VTP.
 - [ ] Configurar uplinks como trunk.
 - [ ] Configurar puertos de AP como access en la VLAN del area atendida.

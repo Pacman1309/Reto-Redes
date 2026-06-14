@@ -192,7 +192,7 @@
       gap: 7px;
       margin: 10px 0 14px;
     }
-    .line-list span {
+    .line-list > span {
       border: 1px solid #e4e9f0;
       border-radius: 8px;
       padding: 8px 10px;
@@ -200,6 +200,25 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
       font-size: .9rem;
       overflow-wrap: anywhere;
+    }
+    .line-list > span.vtp-ok {
+      border-color: #8fd3ad;
+      background: #eefaf3;
+      color: #145c3d;
+      font-weight: 800;
+    }
+    .line-list > span.vtp-missing {
+      border-color: #f0aaa5;
+      background: #fff1f0;
+      color: #8f1d18;
+      font-weight: 800;
+    }
+    .line-list .status {
+      display: block;
+      margin-top: 3px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: .76rem;
+      font-weight: 800;
     }
     .code-wrap { position: relative; margin: 12px 0 16px; }
     pre {
@@ -319,7 +338,7 @@
 <li>Al final de cada bloque se incluye "write memory" para guardar.</li>
 <li>Si Packet Tracer pregunta "Continue with configuration dialog?", escriban no.</li>
 <li>Si un modelo Switch-PT viejo marca error en un comando de STP o trunk avanzado, ignoren solo ese comando y sigan con el resto.</li>
-<li>Para VTP usen siempre el mismo dominio y password en todos los switches: dominio OMI-REDES, password OMI2026, version 2. En switches cliente, apliquen primero "vtp version 2" y al final "vtp mode client"; si ya estan en client, Packet Tracer puede mostrar "cannot modify version in VTP client mode".</li>
+<li>Para VTP usen siempre el mismo dominio y password en todos los switches: dominio OMI-REDES, password OMI2026. La version 2 se valida en el servidor VTP SW-1ERA.1-42; en clientes Packet Tracer puede mostrar version running 1 cuando pasan a modo client, aunque la propagacion de VLAN funcione.</li>
 <li>No apliquen rangos de puertos sobre uplinks/trunks. Los uplinks son GigabitEthernet; los usuarios/APs normalmente estan en FastEthernet.</li>
             </ul>
           </div>
@@ -540,34 +559,42 @@ show vtp status</code></pre></div>
   <div class="section-body">
 <h3>Dispositivos</h3>
 <div class="line-list">
-<span>SW-1ERA.1-43</span>
-<span>SW-1ERA.1-40</span>
-<span>SW-2ERA.1-44</span>
-<span>SW-2ERA.1-42</span>
-<span>SW-3ERA.1-44</span>
-<span>SW-3ERA.1-42</span>
-<span>SW-1ERC.1-44</span>
-<span>SW-1ERC.1-42</span>
-<span>SW-1ERC.1-40</span>
-<span>SW-4ERC.1-44</span>
-<span>SW-4ERC.1-42</span>
-<span>SW-1ERB.1-44</span>
-<span>SW-1ERB.1-42</span>
-<span>SW-2ERB.1-44</span>
-<span>SW-2ERB.1-42</span>
-<span>SW-2ERB.1-40</span>
-<span>SW-2ERBA.1-44</span>
-<span>SW-2ERBA.1-42</span>
-<span>SW-2ERBL.1-44</span>
-<span>SW-2ERBL.1-42</span>
+<span class="vtp-ok">SW-1ERA.1-43 <span class="status">VTP version 2 detectada</span></span>
+<span class="vtp-missing">SW-1ERA.1-40 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERA.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERA.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-3ERA.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-3ERA.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-1ERC.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-1ERC.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-1ERC.1-40 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-4ERC.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-4ERC.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-1ERB.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-1ERB.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERB.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERB.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERB.1-40 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERBA.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERBA.1-42 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERBL.1-44 <span class="status">Falta version 2</span></span>
+<span class="vtp-missing">SW-2ERBL.1-42 <span class="status">Falta version 2</span></span>
 </div>
+<p>Lectura del XML de avance: verde significa que el switch ya trae algun bloque VTP con version 2. Rojo significa que en el XML sigue apareciendo con version 1.</p>
 <h3>Accion</h3>
-<p>En cada switch de la lista, abrir CLI y pegar el mismo bloque. Despues cambien el hostname en la primera linea por el nombre real del switch.</p>
+<p>Antes de tocar los clientes, confirmar que el servidor VTP si este en version 2. En SW-1ERA.1-42 ejecuten:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show vtp status</code></pre></div>
+<p>Debe decir:</p>
+<ul>
+<li>VTP Operating Mode: Server.</li>
+<li>VTP Domain Name: OMI-REDES.</li>
+<li>VTP version running: 2.</li>
+</ul>
+<p>En cada switch cliente, abrir CLI y pegar este bloque. Despues cambien el hostname en la primera linea por el nombre real del switch.</p>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
 configure terminal
 hostname NOMBRE_DEL_SWITCH
 vtp domain OMI-REDES
-vtp version 2
 vtp password OMI2026
 vtp mode client
 end
@@ -583,21 +610,26 @@ write memory</code></pre></div>
 <ul>
 <li>VTP domain name: OMI-REDES.</li>
 <li>VTP operating mode: Client.</li>
-<li>La version debe ser 2.</li>
+<li>En Packet Tracer, "VTP version running" puede quedarse en 1 al estar en modo Client. No lo corrijan en el cliente si el servidor si esta en version 2 y las VLAN se propagan.</li>
 <li>Las VLAN 10-80 apareceran despues de que el trunk hacia el servidor VTP quede activo en el Paso 4.</li>
 </ul>
 <h3>Nota</h3>
 <p>Si el switch ya quedo como cliente y aparece el error:</p>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>cannot modify version in VTP client mode</code></pre></div>
-<p>usen esta correccion en ese switch antes de activar el trunk hacia el servidor VTP:</p>
+<p>no es necesario seguir intentando `vtp version 2` en ese switch. Ese mensaje aparece porque el modo client no permite modificar la version local. La version que importa para la rubrica debe demostrarse en SW-1ERA.1-42, que es el VTP server.</p>
+<p>Si las VLAN 10-80 NO se aprenden despues de activar trunks, entonces limpien el estado VTP local con este bloque y repitan la verificacion:</p>
 <div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>enable
 configure terminal
-vtp mode server
-vtp version 2
+vtp mode transparent
+vtp domain OMI-REDES
+vtp password OMI2026
 vtp mode client
 end
 write memory</code></pre></div>
-<p>Despues verifiquen otra vez con "show vtp status". El error pasa porque IOS no deja cambiar la version mientras el switch esta en modo cliente.</p>
+<p>Despues revisen:</p>
+<div class="code-wrap"><button class="copy" type="button" aria-label="Copiar bloque">Copiar</button><pre><code>show interfaces trunk
+show vlan brief
+show vtp status</code></pre></div>
 <p>Si un Switch-PT viejo no acepta "vtp password" o "vtp version 2", apliquen por lo menos "vtp domain OMI-REDES" y "vtp mode client". Si VTP no propaga en ese modelo, usen el bloque manual de VLANs del Paso 2 como respaldo solo en ese switch.</p>
   </div>
 </section>
@@ -1724,7 +1756,7 @@ show vtp status</code></pre></div>
 <li>Vlan70 aparece up/up o up con la IP de gestion asignada.</li>
 <li>Uplink hacia distribucion aparece como trunk.</li>
 <li>Puertos de usuario aparecen en su VLAN correcta.</li>
-<li>VTP aparece como Client, dominio OMI-REDES, version 2.</li>
+<li>VTP aparece como Client y dominio OMI-REDES. Si "version running" sale 1 en Packet Tracer, no es fallo mientras el servidor este en version 2.</li>
 <li>VLAN 10,20,30,40,50,60,70,80 se ven aprendidas por VTP.</li>
 </ul>
 <h3>11.4 Prueba desde hosts autorizados</h3>
@@ -1893,7 +1925,7 @@ write memory</code></pre></div>
 <label class="check"><input type="checkbox"> <span>RT-1ERA.1-45 no tiene helper en VLAN 70.</span></label>
 <label class="check"><input type="checkbox"> <span>ACL_INVITADOS_IN aplicada en Gi0/0/0.30.</span></label>
 <label class="check"><input type="checkbox"> <span>SW-1ERA.1-42 esta como VTP server en dominio OMI-REDES version 2.</span></label>
-<label class="check"><input type="checkbox"> <span>Switches restantes estan como VTP client en dominio OMI-REDES version 2.</span></label>
+<label class="check"><input type="checkbox"> <span>Switches restantes estan como VTP client en dominio OMI-REDES y aprenden VLAN 10-80.</span></label>
 <label class="check"><input type="checkbox"> <span>VLAN 10-80 se propagan por VTP despues de activar trunks.</span></label>
 <label class="check"><input type="checkbox"> <span>SW-1ERA.1-42 tiene trunk a router, WLC y SW-1ERA.1-43.</span></label>
 <label class="check"><input type="checkbox"> <span>Todos los trunks de fibra permiten VLAN 10-80.</span></label>
