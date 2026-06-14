@@ -1,350 +1,342 @@
-# Auditoria Detallada Del XML - Fase 3
+# Auditoria Detallada Del XML - Fase 3 WLC Corr
 
-Archivo auditado: `data/output/Reto Diseño de Redes Fase 3 avance 2.xml`
-Archivo Packet Tracer asociado: `data/input/Reto Diseño de Redes Fase 3 avance 2.pkt`
+Archivo auditado: `data/output/Reto Diseño de Redes Fase 3 WLC Corr.xml`
+Archivo Packet Tracer asociado: `data/input/Reto Diseño de Redes Fase 3 WLC Corr.pkt`
 Fecha de auditoria: 2026-06-14
 
-Metodo: lectura estructurada del XML con foco en `DEVICE`, `RUNNINGCONFIG`, `STARTUPCONFIG`, `VLANS`, `VTP`, `DHCP_SERVERS`, WLC/CAPWAP, WLANs, APs, perfiles wireless de clientes, leases DHCP y enlaces fisicos.
+Metodo: lectura estructurada del XML con foco en el camino DHCP completo:
+cliente wireless, AP, puerto de switch, WLC, trunk WLC-switch, router-on-a-stick,
+`ip helper-address`, servidor DHCP, pools y leases.
 
-## Resumen Ejecutivo
+## Veredicto Ejecutivo
 
-El avance nuevo ya muestra que la parte inalambrica fue conectada mejor: el WLC tiene WLANs para VLAN 10,20,30,40,50,60 y 80, la clave de `Primaria-Wifi` ya fue corregida a `concurso123`, y los 16 AP ligeros ya tienen controlador primario `172.23.45.131`. El WLC tambien muestra 16 APs en su bloque de CAPWAP.
+El WLC 3504, las interfaces dinamicas, los pools DHCP y los trunks principales
+estan casi todos correctos. El problema que explica que los clientes no puedan
+obtener IP es este:
 
-El problema principal ahora es DHCP en wireless: los clientes inalambricos si estan recibiendo IP, pero casi todos reciben direccion del `serverPool` generico, no del pool que corresponde a su SSID/VLAN. Ejemplo: clientes de `Primaria-Wifi` deberian recibir `172.23.40.x/23`, pero estan recibiendo `172.23.45.159/26`, `172.23.45.172/26`, etc. Eso indica que el trafico wireless esta cayendo en la VLAN de gestion/native o en el pool por defecto, no en la VLAN del SSID.
+**Las WLAN quedaron en modo `WLAN_SWITCH_MODE = 1` y todos los puertos de AP
+siguen como `access vlan 70`.**
 
-El core sigue bien: router-on-a-stick, helpers a `172.23.45.130`, ACL de Invitados y VLANs/trunks principales permanecen configurados. La pasada exhaustiva agrega una senal importante: el controlador usado es `WLC-PT`, no un 2504/3504, y el XML trae `WLC_INTERFACES` vacio con `INTERFACE_NAME` vacio en todas las WLAN. Eso explica por que, aunque el switch tenga trunk correcto, las WLAN pueden seguir saliendo por la VLAN native/gestion.
+Con esa combinacion, el trafico de clientes sale por la VLAN de gestion del AP
+en vez de salir por la VLAN del SSID. Resultado:
 
-Estado general estimado:
+- Los clientes no llegan a su gateway real, por ejemplo `172.23.40.1`.
+- DHCP no llega al pool correcto, por ejemplo `VLAN10_Primaria`.
+- Los clientes que si reciben algo caen en `VLAN_GestionTI`.
+- El pool `VLAN_GestionTI` ya esta lleno con 37 leases, asi que otros clientes
+  muestran `DHCP request failed`.
 
-| Area | Avance | Veredicto |
-| --- | ---: | --- |
-| Topologia fisica y objetos TIA/EIA | 85% | Parcialmente listo |
-| VLSM y VLAN base | 90% | Bien encaminado |
-| Router-on-a-stick | 90% | Casi listo |
-| DHCP como servicio | 70% | Funciona, pero wireless usa pool incorrecto |
-| VTP | 72% | Parcial, validar version/propagacion |
-| Switching backbone/acceso | 78% | Parcialmente listo |
-| Wireless con WLC/LWAP | 68% | APs/WLANs avanzaron; falta VLAN correcta por SSID |
-| Seguridad por ACL | 70% | ACL base presente |
-| Administracion Telnet | 10% | Pendiente |
-| Endpoints y pruebas | 45% | Wireless conectado, IPs incorrectas |
-| Export de configuraciones | 0% | Pendiente |
+Conclusion practica: el problema no esta en que falte el pool de DHCP, ni en el
+router helper, ni en el trunk WLC-switch. El fallo esta en el modo de switching
+wireless contra la configuracion access VLAN 70 de los puertos AP.
 
-## Hallazgo Critico: DHCP Wireless En Pool Incorrecto
+## Estado General
 
-Veredicto: FAIL funcional para 10.2.
+| Area | Estado | Veredicto |
+| --- | --- | --- |
+| WLC 3504 | Encendido, unico WLC activo | PASS |
+| Interfaces dinamicas WLC | VLAN 10,20,30,40,50,60,80 creadas | PASS |
+| WLANs | 7 WLANs activas y mapeadas a interfaces | PASS parcial |
+| Modo WLAN | Todas con `WLAN_SWITCH_MODE = 1` | Riesgo principal |
+| APs | 16 APs con primary controller `172.23.45.131` | PASS |
+| Puertos AP | Todos en `access vlan 70` | OK solo sin local switching |
+| Trunk WLC-switch | `Gi1/0/2` trunk native 70, allowed 10-80 | PASS |
+| Trunks backbone | VLAN 10,20,30,40,50,60,70,80 permitidas | PASS |
+| Router helpers | Helpers a `172.23.45.130` en VLAN de usuarios | PASS |
+| DHCP pools | Pools correctos por VLAN | PASS |
+| DHCP real de clientes | Clientes caen en GestionTI o fallan | FAIL |
 
-El XML muestra 26 clientes conectados a SSID wireless con IP en su perfil actual. Ninguno esta recibiendo una IP dentro de la red esperada para su SSID:
+## WLC 3504
+
+Dispositivo activo:
+
+| Campo | Valor |
+| --- | --- |
+| Nombre | `WLC-1ERA.1-35` |
+| Modelo | `WLC-3504` |
+| Power | `true` |
+| Management IP | `172.23.45.131/26` |
+| Gateway management | `172.23.45.129` |
+| Interfaces WLC | 9 |
+| WLANs | 7 |
+| APs en WLC | 16 |
+
+Ya no aparece el WLC-PT viejo como dispositivo activo. Esta parte esta bien.
+
+## Interfaces Dinamicas Del WLC
+
+| Interface | VLAN | IP | Mascara | Gateway | DHCP Server | Port | AP Mgmt |
+| --- | ---: | --- | --- | --- | --- | ---: | --- |
+| `management` | 0 | `172.23.45.131` | `255.255.255.192` | `172.23.45.129` | `0.0.0.0` | 1 | `true` |
+| `virtual` | 0 | `192.0.2.1` | `255.255.255.255` | - | `0.0.0.0` | 0 | `false` |
+| `vlan10_primaria` | 10 | `172.23.40.2` | `255.255.254.0` | `172.23.40.1` | `172.23.45.130` | 1 | `false` |
+| `vlan20_secundaria` | 20 | `172.23.42.2` | `255.255.255.0` | `172.23.42.1` | `172.23.45.130` | 1 | `false` |
+| `vlan30_invitados` | 30 | `172.23.43.2` | `255.255.255.0` | `172.23.43.1` | `172.23.45.130` | 1 | `false` |
+| `vlan40_preparatoria` | 40 | `172.23.44.2` | `255.255.255.0` | `172.23.44.1` | `172.23.45.130` | 1 | `false` |
+| `vlan50_entrenadores` | 50 | `172.23.45.2` | `255.255.255.192` | `172.23.45.1` | `172.23.45.130` | 1 | `false` |
+| `vlan60_prensa` | 60 | `172.23.45.66` | `255.255.255.192` | `172.23.45.65` | `172.23.45.130` | 1 | `false` |
+| `vlan80_jueces` | 80 | `172.23.45.199` | `255.255.255.224` | `172.23.45.193` | `172.23.45.130` | 1 | `false` |
+
+Esto esta correcto. Que las interfaces dinamicas usen `Port 1` esta bien porque
+el enlace fisico del WLC al switch es trunk.
+
+## WLANs
+
+| WLAN | VLAN | Interface | Enabled | Switch mode | Clave | Estado |
+| --- | ---: | --- | --- | ---: | --- | --- |
+| `Primaria-Wifi` | 10 | `vlan10_primaria` | `true` | 1 | `concurso123` | Revisar local switching |
+| `Secundaria-Wifi` | 20 | `vlan20_secundaria` | `true` | 1 | `concurso123` | Revisar local switching |
+| `Invitados-Wifi` | 30 | `vlan30_invitados` | `true` | 1 | `concurso123` | Revisar local switching |
+| `Preparatoria-Wifi` | 40 | `vlan40_preparatoria` | `true` | 1 | `concurso123` | Revisar local switching |
+| `Entrenadores-Wifi` | 50 | `vlan50_entrenadores` | `true` | 1 | `concurso123` | Revisar local switching |
+| `Prensa-Wifi` | 60 | `vlan60_prensa` | `true` | 1 | `concurso123` | Revisar local switching |
+| `Jueces-Wifi` | 80 | `vlan80_jueces` | `true` | 1 | `concurso123` | Revisar local switching |
+
+Antes `Primaria-Wifi` aparecia con switch mode `0`; ahora todas aparecen en
+`1`. Por el comportamiento observado, trata ese modo como switching local /
+FlexConnect local switching. Si las WLAN trabajan asi, los puertos AP deben ser
+trunk. Si los puertos AP quedan access VLAN 70, el cliente cae en GestionTI.
+
+## AP Group
+
+El grupo `default-group` incluye:
+
+- `Secundaria-Wifi`
+- `Invitados-Wifi`
+- `Preparatoria-Wifi`
+- `Entrenadores-Wifi`
+- `Prensa-Wifi`
+- `Jueces-Wifi`
+- `Primaria-Wifi`
+
+Por eso el problema no parece ser que las WLAN no esten asignadas al AP group.
+
+## APs Y Puertos De Switch
+
+Todos los APs tienen `PRIMARY_AC 172.23.45.131`. Tambien todos sus puertos de
+switch estan como access VLAN 70:
+
+| AP | Camino fisico | Puerto switch | Modo |
+| --- | --- | --- | --- |
+| `CIT-PBAP-02` | `1ERA.1-41:01-02:Jack1` -> `PP-1ERA.1-41:PunchDown1` | `SW-1ERA.1-40 Fa0/1` | access VLAN 70 |
+| `CIT-PBAP-01` | `1ERA.1-41:01-02:Jack2` -> `PP-1ERA.1-41:PunchDown2` | `SW-1ERA.1-40 Fa0/2` | access VLAN 70 |
+| `CIT-02AP-01` | `2ERA.1-43:01-04:Jack1` -> `PP-2ERA.1-43:PunchDown1` | `SW-2ERA.1-42 Fa0/1` | access VLAN 70 |
+| `CIT-03AP-01` | `3ERA.1-43:01-03:Jack1` -> `PP-3ERA.1-43:PunchDown1` | `SW-3ERA.1-42 Fa0/1` | access VLAN 70 |
+| `CIT-03AP-02` | `3ERA.1-43:01-03:Jack2` -> `PP-3ERA.1-43:PunchDown2` | `SW-3ERA.1-42 Fa0/2` | access VLAN 70 |
+| `CIT-03AP-03` | `3ERA.1-43:01-03:Jack3` -> `PP-3ERA.1-43:PunchDown3` | `SW-3ERA.1-42 Fa0/3` | access VLAN 70 |
+| `HUM-02AP-05` | `2ERB.1-41:17:Jack1` -> `PP-2ERB.1-41:PunchDown17` | `SW-2ERB.1-40 Fa0/17` | access VLAN 70 |
+| `HUM-PBAP-01` | `1ERB.1-43:01:Jack1` -> `PP-1ERB.1-43:PunchDown1` | `SW-1ERB.1-42 Fa0/1` | access VLAN 70 |
+| `HUM-PBAP-02` | `1ERB.1-43:02:Jack1` -> `PP-1ERB.1-43:PunchDown2` | `SW-1ERB.1-42 Fa0/2` | access VLAN 70 |
+| `HUM-02AP-01` | `2ERBA.1-43:01:Jack1` -> `PP-2ERBA.1-43:PunchDown1` | `SW-2ERBA.1-42 Fa0/1` | access VLAN 70 |
+| `HUM-02AP-02` | `2ERBA.1-43:02:Jack1` -> `PP-2ERBA.1-43:PunchDown2` | `SW-2ERBA.1-42 Fa0/2` | access VLAN 70 |
+| `HUM-02AP-03` | `2ERBA.1-43:03:Jack1` -> `PP-2ERBA.1-43:PunchDown3` | `SW-2ERBA.1-42 Fa0/3` | access VLAN 70 |
+| `HUM-02AP-04` | `2ERBA.1-43:04:Jack1` -> `PP-2ERBA.1-43:PunchDown4` | `SW-2ERBA.1-42 Fa0/4` | access VLAN 70 |
+| `HUM-PBAP-03` | `2ERBL.1-43:01:Jack1` -> `PP-2ERBL.1-43:PunchDown1` | `SW-2ERBL.1-42 Fa0/1` | access VLAN 70 |
+| `ING-04AP-01` | `4ERC.1-43:01:Jack1` -> `PP-4ERC.1-43:PunchDown1` | `SW-4ERC.1-42 Fa0/1` | access VLAN 70 |
+| `ING-PBAP-01` | `1ERC.1-41:01:Jack1` -> `PP-1ERC.1-41:PunchDown1` | `SW-1ERC.1-40 Fa0/1` | access VLAN 70 |
+
+Esta tabla es el dato decisivo. Access VLAN 70 esta bien para APs ligeros con
+switching centralizado. Pero si la WLAN hace local switching, esos puertos
+deben transportar las VLAN de usuarios.
+
+## Trunks Principales
+
+El trunk del WLC esta bien:
+
+```ios
+interface GigabitEthernet1/0/2
+ description TRUNK_hacia_WLC-1ERA.1-35
+ switchport access vlan 70
+ switchport trunk native vlan 70
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ switchport mode trunk
+```
+
+El router tambien esta conectado por trunk:
+
+```ios
+interface GigabitEthernet1/0/4
+ description TRUNK_hacia_RT-1ERA.1-45
+ switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ switchport mode trunk
+```
+
+Y los trunks de backbone auditados permiten las VLAN `10,20,30,40,50,60,70,80`.
+No veo un trunk principal cortando VLAN 10 o VLAN 70.
+
+## Router-On-A-Stick
+
+El router `RT-1ERA.1-45` tiene subinterfaces correctas:
+
+| VLAN | Gateway | Helper DHCP |
+| ---: | --- | --- |
+| 10 | `172.23.40.1/23` | `172.23.45.130` |
+| 20 | `172.23.42.1/24` | `172.23.45.130` |
+| 30 | `172.23.43.1/24` | `172.23.45.130` |
+| 40 | `172.23.44.1/24` | `172.23.45.130` |
+| 50 | `172.23.45.1/26` | `172.23.45.130` |
+| 60 | `172.23.45.65/26` | `172.23.45.130` |
+| 70 | `172.23.45.129/26` | sin helper, correcto para gestion |
+| 80 | `172.23.45.193/27` | `172.23.45.130` |
+
+Si el cliente realmente entrara a VLAN 10, deberia poder llegar a
+`172.23.40.1`. Como no llega, el problema esta antes del router: en el camino
+wireless/VLAN.
+
+## DHCP Del Servidor
+
+Servidor: `DHCP-1ERA.1-39`.
+
+| Pool | Red | Rango | Gateway | WLC Address | Leases |
+| --- | --- | --- | --- | --- | ---: |
+| `serverPool` | `192.0.2.0/24` | `192.0.2.10-192.0.2.72` | `0.0.0.0` | `0.0.0.0` | 0 |
+| `VLAN_GestionTI` | `172.23.45.128/26` | `172.23.45.154-172.23.45.190` | `172.23.45.129` | `172.23.45.131` | 37 |
+| `VLAN_Jueces` | `172.23.45.192/27` | `172.23.45.200-172.23.45.222` | `172.23.45.193` | `172.23.45.131` | 0 |
+| `VLAN_Prensa` | `172.23.45.64/26` | `172.23.45.67-172.23.45.127` | `172.23.45.65` | `172.23.45.131` | 0 |
+| `VLAN_Entrenadores` | `172.23.45.0/26` | `172.23.45.3-172.23.45.63` | `172.23.45.1` | `172.23.45.131` | 0 |
+| `VLAN_Preparatoria` | `172.23.44.0/24` | `172.23.44.3-172.23.44.255` | `172.23.44.1` | `172.23.45.131` | 0 |
+| `VLAN_Invitados` | `172.23.43.0/24` | `172.23.43.3-172.23.43.255` | `172.23.43.1` | `172.23.45.131` | 0 |
+| `VLAN_Secundaria` | `172.23.42.0/24` | `172.23.42.3-172.23.42.255` | `172.23.42.1` | `172.23.45.131` | 0 |
+| `VLAN10_Primaria` | `172.23.40.0/23` | `172.23.40.3-172.23.41.255` | `172.23.40.1` | `172.23.45.131` | 0 |
+
+Los pools por VLAN estan bien. El problema es que los clientes no estan llegando
+a esos pools. `VLAN_GestionTI` ya tiene 37 leases, que coincide con su maximo.
+Eso explica `DHCP request failed` para nuevos clientes que siguen cayendo en
+GestionTI.
+
+## Clientes Wireless En El XML
 
 | Estado | Cantidad |
 | --- | ---: |
-| Clientes wireless con IP correcta segun SSID | 0 |
-| Clientes wireless con IP de pool incorrecto | 24 |
-| Clientes wireless en APIPA | 2 |
+| IP correcta | 1 |
+| IP de GestionTI | 21 |
+| Sin IP | 2 |
+| APIPA | 2 |
 
-Patron observado:
+Detalle:
 
-- Muchos clientes wireless reciben `172.23.45.154-190/26`.
-- Esa red corresponde a GestionTI / VLAN 70, no a Primaria, Secundaria, Invitados, Preparatoria, Prensa o Jueces.
-- En el servidor DHCP hay 41 leases dentro del `serverPool` generico.
-- `serverPool` esta configurado con gateway `0.0.0.0`, inicio `172.23.45.128` y fin `172.23.47.127`.
-
-Interpretacion:
-
-El DHCP no esta "inventando" IPs: esta usando el `serverPool` generico porque las solicitudes wireless estan llegando como si fueran de la red de gestion/native, o porque ese pool por defecto esta capturando solicitudes que no deberia. Mientras esto siga asi, el Paso 10.2 puede mostrar conexion Wi-Fi, pero no conectividad correcta por VLAN.
-
-## Clientes Wireless Detectados
-
-| Cliente | SSID | IP actual | Red esperada | Estado |
+| Cliente | SSID | IP actual | Esperado | Estado |
 | --- | --- | --- | --- | --- |
-| `PartPri3` | Primaria-Wifi | `172.23.45.159/26` | `172.23.40.0/23` | Pool incorrecto |
-| `PartPri2` | Primaria-Wifi | `172.23.45.172/26` | `172.23.40.0/23` | Pool incorrecto |
-| `PartPri1` | Primaria-Wifi | `172.23.45.169/26` | `172.23.40.0/23` | Pool incorrecto |
-| `Laptop3` | Secundaria-Wifi | `172.23.45.178/26` | `172.23.42.0/24` | Pool incorrecto |
-| `Laptop4` | Secundaria-Wifi | `172.23.45.177/26` | `172.23.42.0/24` | Pool incorrecto |
-| `1208` | Secundaria-Wifi | `172.23.45.187/26` | `172.23.42.0/24` | Pool incorrecto |
-| `Laptop6` | Secundaria-Wifi | `172.23.45.188/26` | `172.23.42.0/24` | Pool incorrecto |
-| `Laptop7` | Secundaria-Wifi | `172.23.45.189/26` | `172.23.42.0/24` | Pool incorrecto |
-| `PC10` | Preparatoria-Wifi | `172.23.45.190/26` | `172.23.44.0/24` | Pool incorrecto |
-| `PC11` | Preparatoria-Wifi | `169.254.214.45/16` | `172.23.44.0/24` | APIPA |
-| `PC12` | Preparatoria-Wifi | `169.254.48.6/16` | `172.23.44.0/24` | APIPA |
-| `1101` | Preparatoria-Wifi | `172.23.45.185/26` | `172.23.44.0/24` | Pool incorrecto |
-| `PC24` | Preparatoria-Wifi | `172.23.45.160/26` | `172.23.44.0/24` | Pool incorrecto |
-| `PC25` | Preparatoria-Wifi | `172.23.45.182/26` | `172.23.44.0/24` | Pool incorrecto |
-| `PC26` | Preparatoria-Wifi | `172.23.45.184/26` | `172.23.44.0/24` | Pool incorrecto |
-| `Smartphone0` | Prensa-Wifi | `172.23.45.179/26` | `172.23.45.64/26` | Pool incorrecto |
-| `Smartphone2` | Prensa-Wifi | `172.23.45.162/26` | `172.23.45.64/26` | Pool incorrecto |
-| `Juez01` | Jueces-Wifi | `172.23.45.170/26` | `172.23.45.192/27` | Pool incorrecto |
-| `Juez02` | Jueces-Wifi | `172.23.45.164/26` | `172.23.45.192/27` | Pool incorrecto |
-| `Invitado1` | Invitados-Wifi | `172.23.45.180/26` | `172.23.43.0/24` | Pool incorrecto |
-| `Invitado3` | Invitados-Wifi | `172.23.45.181/26` | `172.23.43.0/24` | Pool incorrecto |
-| `Invitado5` | Invitados-Wifi | `172.23.45.175/26` | `172.23.43.0/24` | Pool incorrecto |
-| `Invitado2` | Invitados-Wifi | `172.23.45.174/26` | `172.23.43.0/24` | Pool incorrecto |
-| `Invitado4` | Invitados-Wifi | `172.23.45.176/26` | `172.23.43.0/24` | Pool incorrecto |
-| `Entr2-i` | Entrenadores-Wifi | `172.23.45.158/26` | `172.23.45.0/26` | Pool incorrecto |
-| `Entr1-i` | Entrenadores-Wifi | `172.23.45.157/26` | `172.23.45.0/26` | Pool incorrecto |
+| `PartPri3` | `Primaria-Wifi` | `172.23.40.10/23` | `172.23.40.0/23` | OK, parece estatica |
+| `PartPri2` | `Primaria-Wifi` | `172.23.45.179/26` | `172.23.40.0/23` | GestionTI |
+| `PartPri1` | `Primaria-Wifi` | sin IP | `172.23.40.0/23` | DHCP fail |
+| `Laptop3` | `Secundaria-Wifi` | `172.23.45.164/26` | `172.23.42.0/24` | GestionTI |
+| `Laptop4` | `Secundaria-Wifi` | `172.23.45.189/26` | `172.23.42.0/24` | GestionTI |
+| `1208` | `Secundaria-Wifi` | `172.23.45.171/26` | `172.23.42.0/24` | GestionTI |
+| `Laptop6` | `Secundaria-Wifi` | `172.23.45.170/26` | `172.23.42.0/24` | GestionTI |
+| `Laptop7` | `Secundaria-Wifi` | `172.23.45.183/26` | `172.23.42.0/24` | GestionTI |
+| `PC10` | `Preparatoria-Wifi` | `172.23.45.188/26` | `172.23.44.0/24` | GestionTI |
+| `PC11` | `Preparatoria-Wifi` | `172.23.45.185/26` | `172.23.44.0/24` | GestionTI |
+| `PC12` | `Preparatoria-Wifi` | `172.23.45.184/26` | `172.23.44.0/24` | GestionTI |
+| `1101` | `Preparatoria-Wifi` | `172.23.45.178/26` | `172.23.44.0/24` | GestionTI |
+| `PC24` | `Preparatoria-Wifi` | `172.23.45.190/26` | `172.23.44.0/24` | GestionTI |
+| `PC25` | `Preparatoria-Wifi` | `172.23.45.176/26` | `172.23.44.0/24` | GestionTI |
+| `PC26` | `Preparatoria-Wifi` | `169.254.87.229/16` | `172.23.44.0/24` | APIPA |
+| `Smartphone0` | `Prensa-Wifi` | `172.23.45.174/26` | `172.23.45.64/26` | GestionTI |
+| `Smartphone2` | `Prensa-Wifi` | `172.23.45.164/26` | `172.23.45.64/26` | GestionTI |
+| `Juez01` | `Jueces-Wifi` | `169.254.61.168/16` | `172.23.45.192/27` | APIPA |
+| `Juez02` | `Jueces-Wifi` | `172.23.45.181/26` | `172.23.45.192/27` | GestionTI |
+| `Invitado1` | `Invitados-Wifi` | `172.23.45.177/26` | `172.23.43.0/24` | GestionTI |
+| `Invitado3` | `Invitados-Wifi` | `172.23.45.159/26` | `172.23.43.0/24` | GestionTI |
+| `Invitado5` | `Invitados-Wifi` | `172.23.45.173/26` | `172.23.43.0/24` | GestionTI |
+| `Invitado2` | `Invitados-Wifi` | `172.23.45.180/26` | `172.23.43.0/24` | GestionTI |
+| `Invitado4` | `Invitados-Wifi` | `172.23.45.175/26` | `172.23.43.0/24` | GestionTI |
+| `Entr2-i` | `Entrenadores-Wifi` | sin IP | `172.23.45.0/26` | DHCP fail |
+| `Entr1-i` | `Entrenadores-Wifi` | `172.23.45.182/26` | `172.23.45.0/26` | GestionTI |
 
-## Causa Probable
+`PartPri3` tiene una IP correcta, pero por el contexto parece una IP estatica de
+prueba (`172.23.40.10`), no una concesion DHCP del pool `VLAN10_Primaria`,
+porque ese pool tiene 0 leases.
 
-Hay tres senales combinadas:
+## Causa Mas Probable
 
-1. En el XML auditado, `serverPool` generico sigue activo en `DHCP-1ERA.1-39`.
-   - Tiene red `172.23.45.128`.
-   - Mascara `255.255.255.192`.
-   - Gateway `0.0.0.0`.
-   - Rango enorme `172.23.45.128 - 172.23.47.127`.
-   - Esta entregando 41 leases, incluyendo APs y muchos clientes wireless.
-   - Si ya lo cambiaste despues de exportar este XML, hay que generar un XML nuevo para confirmar el estado actual.
+La causa mas probable es:
 
-2. Los SSID no estan separando trafico hacia sus VLAN esperadas.
-   - El WLC tiene VLAN ID por WLAN, pero `WLC_INTERFACES` sigue vacio.
-   - Todas las WLAN tienen `INTERFACE_NAME` vacio.
-   - El WLC es modelo `WLC-PT`, que en esta interfaz no muestra las pantallas de interfaces dinamicas/trunk que normalmente se usan para mapear WLAN -> VLAN.
-   - Tu salida de `show interfaces trunk` en `SW-1ERA.1-42` ya muestra `Gi1/0/2` en trunk y permitiendo VLAN 10,20,30,40,50,60,70,80; por eso el bloqueo principal ya apunta mas al WLC que al switch.
+1. WLANs con local switching/FlexConnect activo (`WLAN_SWITCH_MODE = 1`).
+2. APs conectados a puertos access VLAN 70.
+3. Cliente wireless sale por el AP sin etiqueta de VLAN de usuario.
+4. El switch recibe ese trafico como VLAN 70.
+5. El cliente intenta DHCP en GestionTI, no en su VLAN.
+6. Como `VLAN_GestionTI` esta llena, algunos clientes ya fallan DHCP.
 
-3. Si despues de cambiar `serverPool` un cliente como `PartPri1` sigue tomando `172.23.45.x`, entonces ya no parece un problema de `serverPool`.
-   - Puede estar conservando una concesion vieja hasta renovar/desconectar bien.
-   - O el WLC esta mandando el trafico de clientes como VLAN 70/native, donde cae en GestionTI.
-   - En ese caso, cambiar pools no arregla la causa; hay que corregir el modelo/configuracion del WLC.
+Esta explicacion tambien coincide con tu prueba: una IP estatica en Primaria no
+puede hacer ping a `172.23.40.1`, porque realmente el trafico no esta entrando a
+VLAN 10.
 
-## Busqueda Exhaustiva Adicional
+## Correccion Recomendada
 
-### Modelo Del WLC
+### Opcion A: Recomendada
 
-El XML identifica el controlador como:
+Dejar las WLAN en switching centralizado y mantener APs como access VLAN 70.
 
-```xml
-<TYPE customModel="" model="WLC-PT">WirelessLanController</TYPE>
-```
+En el WLC, para cada WLAN:
 
-No aparece como `2504` ni como `3504`. Los textos `2504`/`3504` aparecen en el XML por coordenadas/valores internos, no como modelo del WLC.
+1. `WLANs`
+2. Abrir la WLAN, por ejemplo `Primaria-Wifi`
+3. Revisar `Advanced` o `FlexConnect`
+4. Desactivar `FlexConnect Local Switching`
+5. Guardar/aplicar
+6. Repetir para las 7 WLANs
 
-Veredicto: si Packet Tracer te deja cambiarlo, conviene usar un WLC 2504 o 3504 para este reto. El `WLC-PT` que tienes no necesariamente esta "mal" para una red simple, pero por las opciones que muestras le falta justo la parte que necesitamos: interfaces dinamicas o mapeo claro de WLAN a VLAN.
+Despues reinicia/renueva un solo cliente:
 
-### Campo `WLC Address` En DHCP
+1. Conectar `PartPri3` a `Primaria-Wifi`
+2. Desktop > IP Configuration > DHCP
+3. Debe recibir `172.23.40.x`
+4. El pool `VLAN10_Primaria` debe empezar a mostrar leases
 
-Los pools DHCP tienen `WLC_ADDRESS 0.0.0.0`. Ese campo ayuda a que los AP descubran el controlador, parecido a una opcion de descubrimiento, pero no decide que pool reciben los clientes finales.
+### Opcion B: Si Packet Tracer Te Obliga A Local Switching
 
-Conclusion:
+Convierte el puerto del AP de prueba a trunk. Hazlo solo con un AP primero.
 
-- Si tus APs ya aparecen asociados al WLC y tienen `PRIMARY_AC 172.23.45.131`, entonces `WLC Address` no es la causa de que `PartPri1` reciba `172.23.45.x`.
-- Aun asi, es recomendable poner `172.23.45.131` como `WLC Address` en el pool de GestionTI/VLAN 70, especialmente si los AP reciben IP por DHCP.
-- No hace falta configurar DHCP en el WLC para los clientes si ya existe `DHCP-1ERA.1-39`; tener dos DHCP activos puede confundirte mas.
-
-### Otros Hallazgos
-
-- Existe `SW-1ERA.1-37` en el XML y aparece como switch sin configuracion util. Si forma parte real de la topologia, falta configurarlo; si es un objeto sobrante, no bloquea el avance.
-- No se detectan `ip default-gateway`, `enable secret` ni `transport input telnet` en las configuraciones exportadas. La administracion Telnet sigue pendiente.
-- Ningun switch muestra SVI de administracion VLAN 70 en el XML. Esto tambien pertenece al bloque de administracion, no al problema DHCP wireless.
-- VTP sigue siendo aceptable si el servidor queda en version 2 y los clientes aprenden VLAN 10-80; no te atasques en forzar version 2 en cada cliente de Packet Tracer.
-
-## Correccion Recomendada Antes De Seguir 10.2
-
-### 1. Revisar Si Puedes Cambiar El WLC
-
-Antes de renovar mas clientes, revisa en Packet Tracer si puedes reemplazar `WLC-PT` por un WLC 2504 o 3504.
-
-Si usas 2504/3504, busca una seccion parecida a interfaces/dynamic interfaces y crea:
-
-| Interface | VLAN | Gateway esperado |
-| --- | ---: | --- |
-| `primaria` | 10 | `172.23.40.1` |
-| `secundaria` | 20 | `172.23.42.1` |
-| `invitados` | 30 | `172.23.43.1` |
-| `preparatoria` | 40 | `172.23.44.1` |
-| `entrenadores` | 50 | `172.23.45.1` |
-| `prensa` | 60 | `172.23.45.65` |
-| `jueces` | 80 | `172.23.45.193` |
-
-Luego asigna cada WLAN a su interfaz/VLAN correspondiente.
-
-### 2. Corregir DHCP Sin Crear Otro DHCP En El WLC
-
-En `DHCP-1ERA.1-39` > Services > DHCP:
-
-- Eliminar o desactivar `serverPool`.
-- Si Packet Tracer no deja eliminarlo, cambiarlo a algo inutil/no usado o reducirlo para que no entregue direcciones.
-- En el pool de GestionTI/VLAN 70, poner `WLC Address` = `172.23.45.131`.
-- Mantener activos los pools por VLAN:
-  - `VLAN10_Primaria`
-  - `VLAN_Secundaria`
-  - `VLAN_Invitados`
-  - `VLAN_Preparatoria`
-  - `VLAN_Entrenadores`
-  - `VLAN_Prensa`
-  - `VLAN_GestionTI`
-  - `VLAN_Jueces`
-
-No borres los pools VLAN. Tampoco actives un segundo DHCP para clientes dentro del WLC salvo que no haya otra salida; para este diseno, el DHCP principal debe seguir siendo `172.23.45.130`.
-
-### 3. Verificar trunk hacia WLC
-
-En `SW-1ERA.1-42`:
+Ejemplo para `CIT-03AP-01`, conectado a `SW-3ERA.1-42 Fa0/1`:
 
 ```ios
-show interfaces trunk
-show running-config interface gigabitEthernet1/0/2
-```
-
-El puerto hacia el WLC debe funcionar como trunk y permitir las VLAN:
-
-```ios
+enable
 configure terminal
-interface gigabitEthernet1/0/2
- description TRUNK_hacia_WLC-1ERA.1-35
+interface fa0/1
+ description LWAP_TRUNK_PRUEBA
  switchport mode trunk
  switchport trunk native vlan 70
  switchport trunk allowed vlan 10,20,30,40,50,60,70,80
+ spanning-tree portfast trunk
 end
 write memory
 ```
 
-Tu salida actual ya cumple lo importante: `Gi1/0/2` esta trunking y permite VLAN 10,20,30,40,50,60,70,80. La native VLAN 70 tiene sentido porque el WLC/APs viven en gestion.
+Luego conecta una laptop a `Primaria-Wifi`, renueva DHCP y prueba:
 
-### 4. Verificar APs
-
-Los APs deben quedarse en VLAN 70 para gestion/CAPWAP. En los puertos donde conectan APs:
-
-```ios
-configure terminal
-interface Fa0/X
- switchport mode access
- switchport access vlan 70
- spanning-tree portfast
-end
-write memory
+```text
+IP esperada: 172.23.40.x
+Gateway esperado: 172.23.40.1
+ping 172.23.40.1
 ```
 
-### 5. Verificar WLC
+Si funciona, entonces aplica la misma logica a los puertos de los APs que van a
+transportar clientes con local switching.
 
-En `WLC-1ERA.1-35`:
+## No Perder Tiempo En Esto
 
-- Management: `172.23.45.131/26`, gateway `172.23.45.129`.
-- Wireless LANs:
-  - Primaria-Wifi -> VLAN 10
-  - Secundaria-Wifi -> VLAN 20
-  - Invitados-Wifi -> VLAN 30
-  - Preparatoria-Wifi -> VLAN 40
-  - Entrenadores-Wifi -> VLAN 50
-  - Prensa-Wifi -> VLAN 60
-  - Jueces-Wifi -> VLAN 80
-- AP Groups: confirmar que las WLAN esten en `default-group`.
-- Si el WLC solo muestra `Settings`, `Wireless LANs`, `AP Groups`, `DHCP`, `GigabitEthernet0` y `Management`, y no permite interfaces dinamicas, considera cambiar a 2504/3504.
+- No cambies los pools DHCP de las VLAN de usuarios; se ven correctos.
+- No cambies el `ip helper-address`; se ve correcto.
+- No actives Dynamic AP Management en interfaces de usuario; ya esta apagado y
+  asi debe quedarse.
+- No cambies el trunk WLC-switch; se ve correcto.
+- No persigas el ping desde switches sin SVI de administracion; eso pertenece a
+  Telnet/gestion, no al DHCP wireless.
 
-### 6. Renovar clientes
+## Siguiente Prueba Decisiva
 
-Despues de corregir DHCP/trunk, en cada cliente wireless:
+Haz una sola prueba:
 
-- Desktop > IP Configuration.
-- Cambiar a Static y regresar a DHCP, o usar DHCP/Renew si aparece.
-- Desconectar y reconectar al SSID si conserva la IP vieja.
+1. En el WLC, apaga `FlexConnect Local Switching` en `Primaria-Wifi`.
+2. Deja `CIT-03AP-01` en access VLAN 70.
+3. Conecta `PartPri3` por DHCP.
+4. Si no funciona, cambia `SW-3ERA.1-42 Fa0/1` a trunk como AP piloto.
+5. Vuelve a renovar DHCP.
 
-## Resultado Esperado Por SSID
+Resultado esperado:
 
-| SSID | VLAN | IP esperada |
-| --- | ---: | --- |
-| Primaria-Wifi | 10 | `172.23.40.3 - 172.23.41.255` |
-| Secundaria-Wifi | 20 | `172.23.42.3 - 172.23.42.255` |
-| Invitados-Wifi | 30 | `172.23.43.3 - 172.23.43.255` |
-| Preparatoria-Wifi | 40 | `172.23.44.3 - 172.23.44.255` |
-| Entrenadores-Wifi | 50 | `172.23.45.3 - 172.23.45.63` |
-| Prensa-Wifi | 60 | `172.23.45.67 - 172.23.45.127` |
-| Jueces-Wifi | 80 | `172.23.45.200 - 172.23.45.222` |
-
-## WLC Y APs
-
-Veredicto: PASS parcial en asociacion de APs, FAIL parcial en separacion por VLAN.
-
-Evidencia positiva:
-
-- WLC `WLC-1ERA.1-35` mantiene IP `172.23.45.131/26`.
-- WLANs 10,20,30,40,50,60 y 80 existen y estan habilitadas.
-- `Primaria-Wifi` ya tiene clave `concurso123`.
-- Los 16 APs tienen `PRIMARY_AC 172.23.45.131`.
-- El WLC muestra 16 entradas de AP.
-
-Pendiente:
-
-- `WLC_INTERFACES` sigue vacio; esto coincide con la limitacion visible del modelo `WLC-PT`.
-- Confirmar o cambiar el WLC a un modelo que permita mapear cada WLAN a una interfaz/VLAN real.
-- Los clientes wireless todavia no reciben IP de la VLAN correcta.
-
-## Core De Red
-
-Veredicto: PASS parcial alto.
-
-El core se mantiene correcto:
-
-- Router `RT-1ERA.1-45` con subinterfaces dot1Q para VLAN 10-80.
-- Helpers DHCP hacia `172.23.45.130`.
-- VLAN 70 sin helper.
-- ACL `ACL_INVITADOS_IN` aplicada en `GigabitEthernet0/0/0.30`.
-- Servidor local `ING-04SRV-01` con `172.23.45.194/27`.
-- DHCP principal `DHCP-1ERA.1-39` con `172.23.45.130/26`.
-
-## DHCP
-
-Veredicto: FAIL parcial en el XML auditado por `serverPool` y por trafico wireless cayendo fuera de su VLAN.
-
-Leases detectados:
-
-| Pool | Leases |
-| --- | ---: |
-| `serverPool` | 41 |
-| `VLAN10_Primaria` | 0 |
-| `VLAN_Secundaria` | 0 |
-| `VLAN_Invitados` | 0 |
-| `VLAN_Preparatoria` | 18 |
-| `VLAN_Entrenadores` | 2 |
-| `VLAN_Prensa` | 0 |
-| `VLAN_GestionTI` | 0 |
-| `VLAN_Jueces` | 0 |
-
-Lectura:
-
-- Preparatoria cableada parece estar recibiendo DHCP correctamente por VLAN 40.
-- Entrenadores cableados parecen recibir DHCP correctamente por VLAN 50.
-- Wireless esta cayendo en `serverPool` en este XML.
-- Si despues del export cambiaste `serverPool` y `PartPri1` sigue en `172.23.45.x`, genera un XML nuevo; eso confirmaria que el trafico del SSID esta llegando por VLAN 70/native o que el cliente conserva una concesion vieja.
-
-## Administracion Telnet
-
-Veredicto: Pendiente.
-
-No fue el foco del nuevo avance. Aun conviene validar:
-
-- `enable secret OMIenable2026`.
-- `line vty` con password y `transport input telnet`.
-- SVIs VLAN 70 en switches.
-
-## Checklist Actual
-
-| Criterio | Estado | Evidencia/pendiente |
-| --- | --- | --- |
-| Router-on-a-stick | PASS | VLAN 10-80 presentes |
-| DHCP helper | PASS | Apunta a `172.23.45.130` |
-| ACL Invitados | PASS parcial | Existe y esta aplicada; faltan pruebas |
-| WLC gestion | PASS | `172.23.45.131/26` |
-| Modelo WLC | FAIL parcial | El XML muestra `WLC-PT`; para este reto conviene 2504/3504 si esta disponible |
-| WLANs 10-80 | PASS | Ya existe Jueces-Wifi |
-| APs con controlador | PASS parcial | `PRIMARY_AC 172.23.45.131` |
-| Clientes wireless conectados | PASS parcial | Tienen SSID e IP |
-| Clientes wireless en VLAN correcta | FAIL | 24 pool incorrecto, 2 APIPA |
-| `serverPool` generico | FAIL en XML | Esta entregando 41 leases; requiere nuevo XML si ya lo cambiaste |
-| `WLC Address` en DHCP | Advertencia | Esta en `0.0.0.0`; poner `172.23.45.131` ayuda a descubrimiento AP, no a pools de clientes |
-| Trunk WLC-switch | PASS parcial | Tu `show interfaces trunk` muestra `Gi1/0/2` trunking con VLAN 10-80 |
-| Telnet gestion | Pendiente | Falta validar/configurar |
-
-## Siguiente Paso
-
-Vas en el Paso 10.2, pero antes de darlo por bueno corrige el WLC/VLAN wireless:
-
-1. Si Packet Tracer ofrece WLC 2504 o 3504, cambia el `WLC-PT` por ese modelo.
-2. Configura management del WLC: `172.23.45.131/26`, gateway `172.23.45.129`.
-3. Crea/mapea interfaces o WLANs para VLAN 10,20,30,40,50,60 y 80.
-4. En el servidor DHCP, deja los pools VLAN y pon `WLC Address 172.23.45.131` en el pool de GestionTI/VLAN 70.
-5. No actives DHCP para clientes en el WLC si el servidor `172.23.45.130` ya esta funcionando.
-6. Renueva un solo cliente: `PartPri1`.
-7. Si `PartPri1` obtiene `172.23.40.x`, ya puedes repetir por SSID.
-
-Si con WLC 2504/3504 y VLAN mapping correcto `PartPri1` sigue tomando `172.23.45.x`, entonces exporta otro XML; ahi ya se revisa si quedo una concesion vieja, un pool residual o un mapeo que Packet Tracer no guardo.
+- Si con local switching apagado funciona, deja todos los APs access VLAN 70.
+- Si solo funciona con el puerto AP en trunk, entonces tu WLC/PT esta trabajando
+  en local switching y necesitas trunk en los puertos AP.
